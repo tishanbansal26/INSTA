@@ -1,0 +1,39 @@
+# Logs
+logs
+*.log
+
+# Node
+node_modules
+
+# Environment
+.env
+.env.local
+
+# Build
+dist
+build
+
+# Cache
+.cache
+
+# VS Code
+.vscode
+
+# macOS
+.DS_Store
+
+# Windows
+Thumbs.db
+
+# Coverage
+coverage
+
+# Prisma
+prisma/dev.db
+
+# Uploads
+uploads
+
+# Temporary
+tmp
+temp
