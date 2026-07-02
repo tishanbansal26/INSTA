@@ -1,7 +1,8 @@
 import { DocumentType, VerificationStatus } from "@prisma/client";
 
 export interface CreateDocumentDto {
-  clientId: string;
+  clientId?: string;
+  expenseId?: string;
   policyId?: string;
   quotationId?: string;
   documentType: DocumentType;

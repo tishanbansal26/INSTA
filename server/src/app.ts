@@ -16,7 +16,20 @@ import quotationRoutes from "./modules/quotations/routes";
 import { paymentRoutes } from "./modules/payments";
 import { documentRoutes } from "./modules/documents";
 import { dashboardRoutes } from "./modules/dashboard";
+
 import reportsRoutes from "./modules/reports";
+
+
+
+
+import commissionRoutes from "./modules/commissions/routes";
+import expenseRoutes from "./modules/expenses/routes";
+import payoutRoutes from "./modules/payouts/routes";
+import invoiceRoutes from "./modules/invoices/routes";
+import financeRoutes from "./modules/finance/routes";
+import taskRoutes from "./modules/crm/task.routes";
+import aiRoutes from "./modules/ai/ai.routes";
+
 import renewalsRoutes from "./modules/renewals";
 import notificationsRoutes from "./modules/notifications";
 import policyWorkflowRoutes from "./modules/policy-workflow";
@@ -68,10 +81,23 @@ app.use("/api/v1/quotations", quotationRoutes);
 app.use("/api/v1/payments", paymentRoutes);
 app.use("/api/v1/documents", documentRoutes);
 app.use("/api/v1/dashboard", dashboardRoutes);
+
 app.use("/api/v1/reports", reportsRoutes);
 app.use("/api/v1/renewals", renewalsRoutes);
 app.use("/api/v1/notifications", notificationsRoutes);
 app.use("/api/v1/workflow", policyWorkflowRoutes);
+
+
+
+
+app.use("/api/v1/commissions", commissionRoutes);
+app.use("/api/v1/expenses", expenseRoutes);
+app.use("/api/v1/payouts", payoutRoutes);
+app.use("/api/v1/invoices", invoiceRoutes);
+app.use("/api/v1/finance", financeRoutes);
+app.use("/api/v1/tasks", taskRoutes);
+app.use("/api/v1/ai", aiRoutes);
+
 
 app.use(notFoundHandler);
 app.use(errorHandler);

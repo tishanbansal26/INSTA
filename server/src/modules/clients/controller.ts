@@ -35,7 +35,7 @@ export const clientController = {
 
   getById: async (req: Request, res: Response, next: NextFunction) => {
     try {
-      const id = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
+      const id = Array.isArray((req.params.id as string)) ? (req.params.id as string)[0] : (req.params.id as string);
       const client = await clientService.getById(id);
       res.status(200).json(apiResponse(true, "Client fetched successfully", client));
     } catch (error) {
@@ -45,7 +45,7 @@ export const clientController = {
 
   update: async (req: Request, res: Response, next: NextFunction) => {
     try {
-      const id = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
+      const id = Array.isArray((req.params.id as string)) ? (req.params.id as string)[0] : (req.params.id as string);
       const client = await clientService.update(id, req.body);
       res.status(200).json(apiResponse(true, "Client updated successfully", client));
     } catch (error) {
@@ -55,7 +55,7 @@ export const clientController = {
 
   remove: async (req: Request, res: Response, next: NextFunction) => {
     try {
-      const id = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
+      const id = Array.isArray((req.params.id as string)) ? (req.params.id as string)[0] : (req.params.id as string);
       const client = await clientService.remove(id);
       res.status(200).json(apiResponse(true, "Client deleted successfully", client));
     } catch (error) {

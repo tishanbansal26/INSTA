@@ -23,7 +23,7 @@ export const premiumRateController = {
 
   getById: async (req: Request, res: Response, next: NextFunction) => {
     try {
-      const id = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
+      const id = Array.isArray((req.params.id as string)) ? (req.params.id as string)[0] : (req.params.id as string);
       const rate = await premiumRateService.getById(id);
       res.status(200).json(apiResponse(true, "Premium rate fetched successfully", rate));
     } catch (error) {
@@ -33,7 +33,7 @@ export const premiumRateController = {
 
   update: async (req: Request, res: Response, next: NextFunction) => {
     try {
-      const id = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
+      const id = Array.isArray((req.params.id as string)) ? (req.params.id as string)[0] : (req.params.id as string);
       const rate = await premiumRateService.update(id, req.body);
       res.status(200).json(apiResponse(true, "Premium rate updated successfully", rate));
     } catch (error) {
@@ -43,7 +43,7 @@ export const premiumRateController = {
 
   remove: async (req: Request, res: Response, next: NextFunction) => {
     try {
-      const id = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
+      const id = Array.isArray((req.params.id as string)) ? (req.params.id as string)[0] : (req.params.id as string);
       const rate = await premiumRateService.remove(id);
       res.status(200).json(apiResponse(true, "Premium rate deleted successfully", rate));
     } catch (error) {

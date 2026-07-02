@@ -30,7 +30,12 @@ export const authenticate = async (req: Request, _res: Response, next: NextFunct
 
     req.user = user;
     next();
-  } catch (error) {
+  } catch (error: any) {
+    if (error.name === 'PrismaClientInitializationError' || error.name === 'PrismaClientKnownRequestError') {
+      console.error("Database connection error in authenticate middleware:", error.message);
+      return next(new AppError("Database connection failed", 500));
+    }
+    console.error("Authentication error:", error);
     next(new AppError("Unauthorized", 401));
   }
 };

@@ -19,7 +19,7 @@ export class PolicyWorkflowController {
 
   async getWorkflow(req: Request, res: Response) {
     try {
-      const workflow = await policyWorkflowService.getWorkflow(req.params.id as string);
+      const workflow = await policyWorkflowService.getWorkflow((req.params.id as string) as string);
       if (!workflow) return res.status(404).json({ success: false, message: "Workflow not found" });
       res.status(200).json({ success: true, data: workflow });
     } catch (error: any) {
@@ -42,7 +42,7 @@ export class PolicyWorkflowController {
     try {
       const data = ApproveWorkflowSchema.parse(req.body);
       const userId = (req as any).user?.id || "admin";
-      const workflow = await policyWorkflowService.transitionState(req.params.id as string, "APPROVED", userId, data.remarks);
+      const workflow = await policyWorkflowService.transitionState((req.params.id as string) as string, "APPROVED", userId, data.remarks);
       res.status(200).json({ success: true, data: workflow });
     } catch (error: any) {
       res.status(400).json({ success: false, message: error.message });
@@ -53,7 +53,7 @@ export class PolicyWorkflowController {
     try {
       const userId = (req as any).user?.id || "admin";
       // Skip deep payment validation here for brevity, transition to PAYMENT_COMPLETED
-      const workflow = await policyWorkflowService.transitionState(req.params.id as string, "PAYMENT_COMPLETED", userId, "Payment received");
+      const workflow = await policyWorkflowService.transitionState((req.params.id as string) as string, "PAYMENT_COMPLETED", userId, "Payment received");
       res.status(200).json({ success: true, data: workflow });
     } catch (error: any) {
       res.status(400).json({ success: false, message: error.message });
@@ -63,7 +63,7 @@ export class PolicyWorkflowController {
   async uploadDocument(req: Request, res: Response) {
     try {
       const userId = (req as any).user?.id || "admin";
-      const workflow = await policyWorkflowService.transitionState(req.params.id as string, "DOCUMENT_UPLOADED", userId, "Document verified");
+      const workflow = await policyWorkflowService.transitionState((req.params.id as string) as string, "DOCUMENT_UPLOADED", userId, "Document verified");
       res.status(200).json({ success: true, data: workflow });
     } catch (error: any) {
       res.status(400).json({ success: false, message: error.message });
@@ -75,7 +75,7 @@ export class PolicyWorkflowController {
       const data = IssuePolicySchema.parse(req.body);
       const userId = (req as any).user?.id || "admin";
       
-      const result = await policyWorkflowService.issuePolicyTransaction(req.params.id as string, userId, data);
+      const result = await policyWorkflowService.issuePolicyTransaction((req.params.id as string) as string, userId, data);
       res.status(200).json({ success: true, data: result });
     } catch (error: any) {
       res.status(400).json({ success: false, message: error.message });
@@ -85,7 +85,7 @@ export class PolicyWorkflowController {
   async completeWorkflow(req: Request, res: Response) {
     try {
       const userId = (req as any).user?.id || "admin";
-      const workflow = await policyWorkflowService.transitionState(req.params.id as string, "COMPLETED", userId, "Workflow finalized");
+      const workflow = await policyWorkflowService.transitionState((req.params.id as string) as string, "COMPLETED", userId, "Workflow finalized");
       res.status(200).json({ success: true, data: workflow });
     } catch (error: any) {
       res.status(400).json({ success: false, message: error.message });

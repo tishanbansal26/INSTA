@@ -24,7 +24,7 @@ export const paymentController = {
 
   getById: async (req: Request, res: Response, next: NextFunction) => {
     try {
-      const id = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
+      const id = Array.isArray((req.params.id as string)) ? (req.params.id as string)[0] : (req.params.id as string);
       const payment = await paymentService.getById(id);
       res.status(200).json(apiResponse(true, "Payment fetched successfully", payment));
     } catch (error) {
@@ -35,7 +35,7 @@ export const paymentController = {
   update: async (req: Request, res: Response, next: NextFunction) => {
     try {
       if (!req.user?.id) throw new Error("Unauthorized");
-      const id = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
+      const id = Array.isArray((req.params.id as string)) ? (req.params.id as string)[0] : (req.params.id as string);
       const payment = await paymentService.update(id, req.body, req.user.id);
       res.status(200).json(apiResponse(true, "Payment updated successfully", payment));
     } catch (error) {
@@ -46,7 +46,7 @@ export const paymentController = {
   remove: async (req: Request, res: Response, next: NextFunction) => {
     try {
       if (!req.user?.id) throw new Error("Unauthorized");
-      const id = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
+      const id = Array.isArray((req.params.id as string)) ? (req.params.id as string)[0] : (req.params.id as string);
       const payment = await paymentService.remove(id, req.user.id);
       res.status(200).json(apiResponse(true, "Payment deleted successfully", payment));
     } catch (error) {

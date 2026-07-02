@@ -23,7 +23,7 @@ export const quotationController = {
 
   getById: async (req: Request, res: Response, next: NextFunction) => {
     try {
-      const id = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
+      const id = Array.isArray((req.params.id as string)) ? (req.params.id as string)[0] : (req.params.id as string);
       const quotation = await quotationService.getById(id);
       res.status(200).json(apiResponse(true, "Quotation fetched successfully", quotation));
     } catch (error) {
@@ -33,7 +33,7 @@ export const quotationController = {
 
   update: async (req: Request, res: Response, next: NextFunction) => {
     try {
-      const id = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
+      const id = Array.isArray((req.params.id as string)) ? (req.params.id as string)[0] : (req.params.id as string);
       const quotation = await quotationService.update(id, req.body);
       res.status(200).json(apiResponse(true, "Quotation updated successfully", quotation));
     } catch (error) {
@@ -43,7 +43,7 @@ export const quotationController = {
 
   remove: async (req: Request, res: Response, next: NextFunction) => {
     try {
-      const id = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
+      const id = Array.isArray((req.params.id as string)) ? (req.params.id as string)[0] : (req.params.id as string);
       const quotation = await quotationService.remove(id);
       res.status(200).json(apiResponse(true, "Quotation deleted successfully", quotation));
     } catch (error) {
@@ -53,7 +53,7 @@ export const quotationController = {
 
   approve: async (req: Request, res: Response, next: NextFunction) => {
     try {
-      const id = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
+      const id = Array.isArray((req.params.id as string)) ? (req.params.id as string)[0] : (req.params.id as string);
       const quotation = await quotationService.approve(id);
       res.status(200).json(apiResponse(true, "Quotation approved successfully", quotation));
     } catch (error) {
@@ -63,7 +63,7 @@ export const quotationController = {
 
   reject: async (req: Request, res: Response, next: NextFunction) => {
     try {
-      const id = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
+      const id = Array.isArray((req.params.id as string)) ? (req.params.id as string)[0] : (req.params.id as string);
       const quotation = await quotationService.reject(id, req.body?.remarks);
       res.status(200).json(apiResponse(true, "Quotation rejected successfully", quotation));
     } catch (error) {
@@ -73,7 +73,7 @@ export const quotationController = {
 
   convertToPolicy: async (req: Request, res: Response, next: NextFunction) => {
     try {
-      const id = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
+      const id = Array.isArray((req.params.id as string)) ? (req.params.id as string)[0] : (req.params.id as string);
       const policy = await quotationService.convertToPolicy(id);
       res.status(201).json(apiResponse(true, "Quotation converted to policy successfully", policy, 201));
     } catch (error) {

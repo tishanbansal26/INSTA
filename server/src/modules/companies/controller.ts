@@ -23,7 +23,7 @@ export const companyController = {
 
   getById: async (req: Request, res: Response, next: NextFunction) => {
     try {
-      const id = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
+      const id = Array.isArray((req.params.id as string)) ? (req.params.id as string)[0] : (req.params.id as string);
       const company = await companyService.getById(id);
       res.status(200).json(apiResponse(true, "Company fetched successfully", company));
     } catch (error) {
@@ -33,7 +33,7 @@ export const companyController = {
 
   update: async (req: Request, res: Response, next: NextFunction) => {
     try {
-      const id = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
+      const id = Array.isArray((req.params.id as string)) ? (req.params.id as string)[0] : (req.params.id as string);
       const company = await companyService.update(id, req.body);
       res.status(200).json(apiResponse(true, "Company updated successfully", company));
     } catch (error) {
@@ -43,7 +43,7 @@ export const companyController = {
 
   remove: async (req: Request, res: Response, next: NextFunction) => {
     try {
-      const id = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
+      const id = Array.isArray((req.params.id as string)) ? (req.params.id as string)[0] : (req.params.id as string);
       const company = await companyService.remove(id);
       res.status(200).json(apiResponse(true, "Company deleted successfully", company));
     } catch (error) {

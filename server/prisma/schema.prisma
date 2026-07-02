@@ -12,6 +12,7 @@ enum Role {
   MANAGER
   AGENT
   ACCOUNTANT
+  CUSTOMER
 }
 
 enum Gender {
@@ -50,6 +51,12 @@ model User {
   assignedRenewals  Renewal[]      @relation("AssignedAgentRenewals")
   activityLogs      ActivityLog[]
   auditTrails       AuditTrail[]
+  commissionSplits  CommissionSplit[]
+  payouts           Payout[]
+  monthlyClosings   MonthlyClosing[]
+  tasksAssigned     Task[] @relation("TaskAssignedTo")
+  tasksCreated      Task[] @relation("TaskCreatedBy")
+  assignedTickets   SupportTicket[] @relation("TicketAssignedTo")
 }
 
 model RefreshToken {
@@ -91,6 +98,10 @@ model Client {
   documents     Document[]
   renewals      Renewal[]      @relation("ClientRenewals")
   workflows     Workflow[]
+  familyMembers FamilyMember[]
+  emergencyContact EmergencyContact?
+  walletTransactions WalletTransaction[]
+  supportTickets SupportTicket[]
 
   @@index([phone])
   @@index([email])
@@ -107,6 +118,9 @@ model Company {
   deletedAt    DateTime?
   plans        Plan[]
   policies     Policy[]
+  commissionRules CommissionRule[]
+  commissions Commission[]
+  invoices Invoice[]
   premiumRates PremiumRate[]
   quotations   Quotation[]
 }
@@ -148,6 +162,7 @@ enum PolicyPaymentStatus {
 
 enum PaymentMode {
   CASH
+  BANK_TRANSFER
   UPI
   CARD
   NET_BANKING
@@ -261,6 +276,8 @@ model Policy {
   renewals      Renewal[]
   workflows     Workflow[]
   activityLogs  ActivityLog[]
+  commissions   Commission[]
+  nominees      Nominee[]
 
   @@index([policyNumber])
   @@index([clientId])
@@ -355,7 +372,8 @@ model Payment {
 
 model Document {
   id                 String             @id @default(cuid())
-  clientId           String
+  clientId           String?
+  expenseId          String?
   policyId           String?
   quotationId        String?
   documentType       DocumentType
@@ -373,7 +391,8 @@ model Document {
   updatedAt          DateTime           @updatedAt
   deletedAt          DateTime?
 
-  client             Client             @relation(fields: [clientId], references: [id])
+  client             Client?            @relation(fields: [clientId], references: [id])
+  expense            Expense?           @relation(fields: [expenseId], references: [id])
   policy             Policy?            @relation(fields: [policyId], references: [id])
   quotation          Quotation?         @relation(fields: [quotationId], references: [id])
   uploadedBy         User               @relation("DocumentUploadedBy", fields: [uploadedById], references: [id])
@@ -488,3 +507,242 @@ model AuditTrail {
   @@index([tableName, recordId])
   @@index([userId])
 }
+
+
+enum ExpenseCategory {
+  OFFICE
+  MARKETING
+  SALARY
+  SOFTWARE
+  TRAVEL
+  OTHER
+}
+enum PayoutStatus {
+  PENDING
+  PROCESSING
+  PAID
+  FAILED
+}
+enum InvoiceStatus {
+  DRAFT
+  ISSUED
+  PAID
+  OVERDUE
+  CANCELLED
+}
+enum CommissionStatus {
+  PENDING
+  GENERATED
+  PAID
+  CANCELLED
+}
+model CommissionRule {
+  id                    String           @id @default(uuid())
+  companyId             String
+  productId             String?
+  planId                String?
+  commissionPct         Decimal          @db.Decimal(5, 2)
+  isActive              Boolean          @default(true)
+  createdAt             DateTime         @default(now())
+  updatedAt             DateTime         @updatedAt
+  company               Company          @relation(fields: [companyId], references: [id])
+  commissions           Commission[]
+  @@index([companyId])
+}
+model Commission {
+  id                    String           @id @default(uuid())
+  commissionNumber      String           @unique
+  companyId             String
+  policyId              String
+  ruleId                String?
+  totalCommissionAmount Decimal          @db.Decimal(12, 2)
+  status                CommissionStatus @default(PENDING)
+  dueDate               DateTime?
+  paidDate              DateTime?
+  createdAt             DateTime         @default(now())
+  updatedAt             DateTime         @updatedAt
+  policy  Policy          @relation(fields: [policyId], references: [id])
+  company Company         @relation(fields: [companyId], references: [id])
+  rule    CommissionRule? @relation(fields: [ruleId], references: [id])
+  splits  CommissionSplit[]
+  @@index([policyId])
+  @@index([companyId])
+  @@index([status])
+}
+model CommissionSplit {
+  id               String     @id @default(uuid())
+  commissionId     String
+  agentId          String
+  splitPct         Decimal    @db.Decimal(5, 2)
+  commissionAmount Decimal    @db.Decimal(12, 2)
+  createdAt        DateTime   @default(now())
+  commission       Commission @relation(fields: [commissionId], references: [id])
+  agent            User       @relation(fields: [agentId], references: [id])
+  @@index([commissionId])
+  @@index([agentId])
+}
+model Expense {
+  id           String          @id @default(uuid())
+  category     ExpenseCategory
+  vendor       String?
+  amount       Decimal         @db.Decimal(12, 2)
+  gst          Decimal         @default(0) @db.Decimal(12, 2)
+  paymentMode  PaymentMode
+  remarks      String?
+  createdAt    DateTime        @default(now())
+  updatedAt    DateTime        @updatedAt
+  documents    Document[]
+}
+model Payout {
+  id           String        @id @default(uuid())
+  agentId      String
+  amount       Decimal       @db.Decimal(12, 2)
+  period       String
+  status       PayoutStatus  @default(PENDING)
+  bankRef      String?
+  paidDate     DateTime?
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+  agent        User          @relation(fields: [agentId], references: [id])
+  @@index([agentId])
+  @@index([period])
+}
+model Invoice {
+  id            String        @id @default(uuid())
+  invoiceNumber String        @unique
+  companyId     String
+  amount        Decimal       @db.Decimal(12, 2)
+  gst           Decimal       @default(0) @db.Decimal(12, 2)
+  dueDate       DateTime?
+  status        InvoiceStatus @default(DRAFT)
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+  company       Company       @relation(fields: [companyId], references: [id])
+  @@index([companyId])
+}
+model MonthlyClosing {
+  id          String    @id @default(uuid())
+  period      String    @unique
+  isLocked    Boolean   @default(false)
+  lockedById  String
+  createdAt   DateTime  @default(now())
+  lockedBy    User      @relation(fields: [lockedById], references: [id])
+}
+enum TaskStatus {
+  PENDING
+  IN_PROGRESS
+  COMPLETED
+  CANCELLED
+}
+enum TaskPriority {
+  LOW
+  MEDIUM
+  HIGH
+}
+model Task {
+  id          String       @id @default(cuid())
+  title       String
+  description String?
+  dueDate     DateTime?
+  status      TaskStatus   @default(PENDING)
+  priority    TaskPriority @default(MEDIUM)
+  assignedToId String?
+  assignedTo  User?        @relation("TaskAssignedTo", fields: [assignedToId], references: [id])
+  createdById String
+  createdBy   User         @relation("TaskCreatedBy", fields: [createdById], references: [id])
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+}
+
+model FamilyMember {
+  id            String   @id @default(cuid())
+  clientId      String
+  client        Client   @relation(fields: [clientId], references: [id])
+  name          String
+  relationship  String
+  dob           DateTime?
+  gender        Gender?
+  aadhaar       String?
+  isInsured     Boolean  @default(false)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+}
+
+model Nominee {
+  id            String   @id @default(cuid())
+  policyId      String
+  policy        Policy   @relation(fields: [policyId], references: [id])
+  name          String
+  relationship  String
+  percentage    Float    @default(100)
+  phone         String?
+  createdAt     DateTime @default(now())
+}
+
+model EmergencyContact {
+  id            String   @id @default(cuid())
+  clientId      String   @unique
+  client        Client   @relation(fields: [clientId], references: [id])
+  name          String
+  phone         String
+  relationship  String
+  createdAt     DateTime @default(now())
+}
+
+model WalletTransaction {
+  id            String   @id @default(cuid())
+  clientId      String
+  client        Client   @relation(fields: [clientId], references: [id])
+  type          WalletTxType
+  amount        Float
+  description   String
+  referenceId   String?
+  createdAt     DateTime @default(now())
+}
+
+enum WalletTxType {
+  PREMIUM_PAID
+  REFUND
+  CLAIM_SETTLED
+  PAYOUT
+}
+
+model SupportTicket {
+  id            String       @id @default(cuid())
+  ticketNumber  String       @unique
+  clientId      String
+  client        Client       @relation(fields: [clientId], references: [id])
+  subject       String
+  priority      TicketPriority @default(MEDIUM)
+  status        TicketStatus   @default(OPEN)
+  assignedToId  String?
+  assignedTo    User?        @relation("TicketAssignedTo", fields: [assignedToId], references: [id])
+  createdAt     DateTime     @default(now())
+  updatedAt     DateTime     @updatedAt
+  replies       TicketReply[]
+}
+
+model TicketReply {
+  id            String        @id @default(cuid())
+  ticketId      String
+  ticket        SupportTicket @relation(fields: [ticketId], references: [id])
+  senderId      String
+  senderRole    String
+  message       String
+  createdAt     DateTime      @default(now())
+}
+
+enum TicketPriority {
+  LOW
+  MEDIUM
+  HIGH
+  URGENT
+}
+
+enum TicketStatus {
+  OPEN
+  IN_PROGRESS
+  RESOLVED
+  CLOSED
+}
+

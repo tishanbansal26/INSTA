@@ -23,7 +23,7 @@ export const policyController = {
 
   getById: async (req: Request, res: Response, next: NextFunction) => {
     try {
-      const id = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
+      const id = Array.isArray((req.params.id as string)) ? (req.params.id as string)[0] : (req.params.id as string);
       const policy = await policyService.getById(id);
       res.status(200).json(apiResponse(true, "Policy fetched successfully", policy));
     } catch (error) {
@@ -33,7 +33,7 @@ export const policyController = {
 
   update: async (req: Request, res: Response, next: NextFunction) => {
     try {
-      const id = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
+      const id = Array.isArray((req.params.id as string)) ? (req.params.id as string)[0] : (req.params.id as string);
       const policy = await policyService.update(id, req.body);
       res.status(200).json(apiResponse(true, "Policy updated successfully", policy));
     } catch (error) {
@@ -43,7 +43,7 @@ export const policyController = {
 
   remove: async (req: Request, res: Response, next: NextFunction) => {
     try {
-      const id = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
+      const id = Array.isArray((req.params.id as string)) ? (req.params.id as string)[0] : (req.params.id as string);
       const policy = await policyService.remove(id);
       res.status(200).json(apiResponse(true, "Policy deleted successfully", policy));
     } catch (error) {

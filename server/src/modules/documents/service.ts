@@ -6,16 +6,21 @@ import type { CreateDocumentDto, UpdateDocumentDto, VerifyDocumentDto } from "./
 import type { DocumentType } from "@prisma/client";
 
 export const documentService = {
-  upload: async (input: CreateDocumentDto, file: Express.Multer.File, uploadedById: string) => {
-    const client = await prisma.client.findUnique({ where: { id: input.clientId } });
-    if (!client) throw new AppError("Client not found", 404);
+  upload: async (input: CreateDocumentDto & { expenseId?: string }, file: Express.Multer.File, uploadedById: string) => {
+    if (input.clientId) {
+      const client = await prisma.client.findUnique({ where: { id: input.clientId } });
+      if (!client) throw new AppError("Client not found", 404);
+    } else if (!input.expenseId) {
+      throw new AppError("Either clientId or expenseId is required", 400);
+    }
 
     const fileUrl = await storageService.uploadFile(file);
 
     return documentRepository.create({
-      clientId: input.clientId,
+      clientId: input.clientId || null,
       policyId: input.policyId,
       quotationId: input.quotationId,
+      expenseId: input.expenseId,
       documentType: input.documentType,
       fileName: file.filename,
       originalFileName: file.originalname,

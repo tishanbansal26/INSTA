@@ -2,6 +2,7 @@ import { AppError } from "../../shared/errors/AppError";
 import prisma from "../../config/prisma";
 import { policyRepository } from "./repository";
 import type { CreatePolicyDto, UpdatePolicyDto } from "./dto";
+import { CommissionEngine } from "../commissions/engine";
 
 const ensurePositiveNumber = (value: number, field: string) => {
   if (!Number.isFinite(value) || value <= 0) {
@@ -57,7 +58,7 @@ export const policyService = {
     const sequence = await prisma.policy.count({ where: { createdAt: { gte: new Date(`${year}-01-01T00:00:00.000Z`) } } });
     const policyNumber = await policyService.generatePolicyNumber(company.code, year, sequence);
 
-    return policyRepository.create({
+    const policy = await policyRepository.create({
       policyNumber,
       clientId: input.clientId,
       companyId: input.companyId,
@@ -74,6 +75,14 @@ export const policyService = {
       remarks: input.remarks,
       createdById: createdById ?? input.agentId,
     });
+    
+    if (policy.status === "ACTIVE") {
+      CommissionEngine.evaluatePolicy(policy.id).catch((err) => 
+        console.error("Failed to generate commission:", err)
+      );
+    }
+    
+    return policy;
   },
 
   list: async (query: any) => {
@@ -125,7 +134,15 @@ export const policyService = {
       }
     }
 
-    return policyRepository.update(id, input);
+    const updated = await policyRepository.update(id, input);
+
+    if (existing.status !== "ACTIVE" && updated.status === "ACTIVE") {
+      CommissionEngine.evaluatePolicy(updated.id).catch((err) => 
+        console.error("Failed to generate commission:", err)
+      );
+    }
+
+    return updated;
   },
 
   remove: async (id: string) => {

@@ -3,6 +3,7 @@ import { Sidebar } from './Sidebar';
 import { Navbar } from './Navbar';
 import { useAppStore } from '../../store/app.store';
 import { cn } from '../../lib/utils';
+import { ChatWidget } from '../ui/ChatWidget';
 
 export function MainLayout() {
   const { isSidebarOpen } = useAppStore();
@@ -18,6 +19,7 @@ export function MainLayout() {
           </div>
         </main>
       </div>
+      <ChatWidget />
     </div>
   );
 }

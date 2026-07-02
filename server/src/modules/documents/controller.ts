@@ -27,7 +27,7 @@ export const documentController = {
 
   getById: async (req: Request, res: Response, next: NextFunction) => {
     try {
-      const id = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
+      const id = Array.isArray((req.params.id as string)) ? (req.params.id as string)[0] : (req.params.id as string);
       const doc = await documentService.getById(id);
       res.status(200).json(apiResponse(true, "Document fetched successfully", doc));
     } catch (error) {
@@ -59,7 +59,7 @@ export const documentController = {
 
   update: async (req: Request, res: Response, next: NextFunction) => {
     try {
-      const id = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
+      const id = Array.isArray((req.params.id as string)) ? (req.params.id as string)[0] : (req.params.id as string);
       const doc = await documentService.update(id, req.body);
       res.status(200).json(apiResponse(true, "Document updated successfully", doc));
     } catch (error) {
@@ -69,7 +69,7 @@ export const documentController = {
 
   remove: async (req: Request, res: Response, next: NextFunction) => {
     try {
-      const id = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
+      const id = Array.isArray((req.params.id as string)) ? (req.params.id as string)[0] : (req.params.id as string);
       const doc = await documentService.remove(id);
       res.status(200).json(apiResponse(true, "Document deleted successfully", doc));
     } catch (error) {
@@ -80,7 +80,7 @@ export const documentController = {
   verify: async (req: Request, res: Response, next: NextFunction) => {
     try {
       if (!req.user?.id) throw new Error("Unauthorized");
-      const id = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
+      const id = Array.isArray((req.params.id as string)) ? (req.params.id as string)[0] : (req.params.id as string);
       const doc = await documentService.verify(id, req.body, req.user.id);
       res.status(200).json(apiResponse(true, "Document verified successfully", doc));
     } catch (error) {

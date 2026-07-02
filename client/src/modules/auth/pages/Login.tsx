@@ -7,7 +7,7 @@ export function Login() {
 
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
-    setAuth({ id: '1', email: 'admin@insureflow.pro', firstName: 'Admin', lastName: 'User', role: 'ADMIN' }, 'fake-jwt-token');
+    setAuth({ id: '1', email: 'admin@insureflow.pro', name: 'Admin User', role: 'ADMIN' }, 'fake-jwt-token');
   };
 
   return (

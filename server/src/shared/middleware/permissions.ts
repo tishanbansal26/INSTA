@@ -12,7 +12,14 @@ export const RolePermissions: Record<string, string[]> = {
   AGENT: [
     "Policy.Create", "Policy.Read",
     "Client.Create", "Client.Read", "Client.Update",
-    "Dashboard.View"
+    "Dashboard.View",
+    "Agent.Dashboard", "Agent.Leads", "Agent.Clients", "Agent.Commission", "Agent.Calendar"
+  ],
+  CUSTOMER: [
+    "Portal.View", "Policy.ReadOwn",
+    "Claim.Create", "Claim.ReadOwn", 
+    "Payment.ReadOwn", "Document.Upload", 
+    "Profile.Update", "Ticket.Create", "Ticket.ReadOwn"
   ]
 };
 

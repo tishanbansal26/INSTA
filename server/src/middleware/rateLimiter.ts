@@ -12,10 +12,14 @@ redisClient.on("error", (err) => {
   console.warn("Redis connection error for rate limiter:", err.message);
 });
 
+const store = env.NODE_ENV === "production"
+  ? new RedisStore({
+      sendCommand: (...args: string[]) => redisClient.call(args[0], ...args.slice(1)) as any,
+    })
+  : undefined;
+
 export const apiLimiter = rateLimit({
-  store: new RedisStore({
-    sendCommand: (...args: string[]) => redisClient.call(args[0], ...args.slice(1)) as any,
-  }),
+  store,
   windowMs: 15 * 60 * 1000, // 15 minutes
   max: 100, // Limit each IP to 100 requests per `window` (here, per 15 minutes)
   standardHeaders: true,
@@ -24,9 +28,7 @@ export const apiLimiter = rateLimit({
 });
 
 export const authLimiter = rateLimit({
-  store: new RedisStore({
-    sendCommand: (...args: string[]) => redisClient.call(args[0], ...args.slice(1)) as any,
-  }),
+  store,
   windowMs: 60 * 60 * 1000, // 1 hour
   max: 10, // Limit each IP to 10 login requests per `window`
   standardHeaders: true,
