@@ -19,7 +19,11 @@ export const signRefreshToken = (payload: Omit<JwtPayload, "iat" | "exp">) => {
 };
 
 export const verifyToken = (token: string) => {
-  return jwt.verify(token, accessSecret) as JwtPayload;
+  try {
+    return jwt.verify(token, accessSecret) as JwtPayload;
+  } catch {
+    return jwt.verify(token, refreshSecret) as JwtPayload;
+  }
 };
 
 export const verifyRefreshToken = (token: string) => {

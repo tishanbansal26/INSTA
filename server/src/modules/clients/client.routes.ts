@@ -7,11 +7,11 @@ import { createClientSchema, updateClientSchema } from "./client.validation";
 
 const router = Router();
 
-router.post("/", authenticate, authorize(["ADMIN", "MANAGER", "AGENT"]), validate(createClientSchema), clientController.create);
+router.post("/", authenticate, authorize("Client.Create"), validate(createClientSchema), clientController.create);
 router.get("/", authenticate, clientController.list);
 router.get("/search", authenticate, clientController.list);
 router.get("/:id", authenticate, clientController.getById);
-router.patch("/:id", authenticate, authorize(["ADMIN", "MANAGER", "AGENT"]), validate(updateClientSchema), clientController.update);
-router.delete("/:id", authenticate, authorize(["ADMIN", "MANAGER"]), clientController.remove);
+router.patch("/:id", authenticate, authorize("Client.Update"), validate(updateClientSchema), clientController.update);
+router.delete("/:id", authenticate, authorize("Client.Delete"), clientController.remove);
 
 export default router;

@@ -20,20 +20,36 @@ enum Gender {
   OTHER
 }
 
+enum MaritalStatus {
+  SINGLE
+  MARRIED
+  DIVORCED
+  WIDOWED
+}
+
 model User {
-  id          String         @id @default(cuid())
-  name        String
-  email       String         @unique
-  password    String
-  phone       String?        @unique
-  role        Role           @default(AGENT)
-  isActive    Boolean        @default(true)
-  lastLogin   DateTime?
-  createdAt   DateTime       @default(now())
-  updatedAt   DateTime       @updatedAt
-  deletedAt   DateTime?
-  refreshToken RefreshToken[]
-  clients      Client[]
+  id                String         @id @default(cuid())
+  name              String
+  email             String         @unique
+  password          String
+  phone             String?        @unique
+  role              Role           @default(AGENT)
+  isActive          Boolean        @default(true)
+  lastLogin         DateTime?
+  createdAt         DateTime       @default(now())
+  updatedAt         DateTime       @updatedAt
+  deletedAt         DateTime?
+  refreshToken      RefreshToken[]
+  clients           Client[]
+  policies          Policy[]
+  quotations        Quotation[]
+  paymentsCreated   Payment[]      @relation("PaymentCreatedBy")
+  paymentsUpdated   Payment[]      @relation("PaymentUpdatedBy")
+  documentsUploaded Document[]     @relation("DocumentUploadedBy")
+  documentsVerified Document[]     @relation("DocumentVerifiedBy")
+  assignedRenewals  Renewal[]      @relation("AssignedAgentRenewals")
+  activityLogs      ActivityLog[]
+  auditTrails       AuditTrail[]
 }
 
 model RefreshToken {
@@ -46,15 +62,17 @@ model RefreshToken {
 }
 
 model Client {
-  id            String    @id @default(cuid())
+  id            String         @id @default(cuid())
   firstName     String
-  lastName      String?
-  email         String?   @unique
-  phone         String    @unique
+  middleName    String?
+  lastName      String
+  email         String?        @unique
+  phone         String         @unique
   dob           DateTime?
   gender        Gender?
-  pan           String?   @unique
-  aadhaar       String?   @unique
+  maritalStatus MaritalStatus?
+  pan           String?        @unique
+  aadhaar       String?        @unique
   occupation    String?
   addressLine1  String?
   addressLine2  String?
@@ -62,10 +80,411 @@ model Client {
   state         String?
   pincode       String?
   notes         String?
-  isActive      Boolean   @default(true)
-  deletedAt     DateTime?
+  isActive      Boolean        @default(true)
   createdById   String
-  createdBy     User      @relation(fields: [createdById], references: [id])
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
+  createdBy     User           @relation(fields: [createdById], references: [id])
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+  deletedAt     DateTime?
+  policies      Policy[]
+  quotations    Quotation[]
+  documents     Document[]
+  renewals      Renewal[]      @relation("ClientRenewals")
+  workflows     Workflow[]
+
+  @@index([phone])
+  @@index([email])
+  @@index([pan])
+}
+
+model Company {
+  id           String         @id @default(cuid())
+  code         String         @unique
+  description  String?
+  isActive     Boolean        @default(true)
+  createdAt    DateTime       @default(now())
+  updatedAt    DateTime       @updatedAt
+  deletedAt    DateTime?
+  plans        Plan[]
+  policies     Policy[]
+  premiumRates PremiumRate[]
+  quotations   Quotation[]
+}
+
+model Plan {
+  id           String         @id @default(cuid())
+  name         String
+  code         String         @unique
+  category     String?
+  description  String?
+  isActive     Boolean        @default(true)
+  companyId    String
+  company      Company        @relation(fields: [companyId], references: [id])
+  createdAt    DateTime       @default(now())
+  updatedAt    DateTime       @updatedAt
+  deletedAt    DateTime?
+  policies     Policy[]
+  premiumRates PremiumRate[]
+  quotations   Quotation[]
+
+  @@index([companyId])
+  @@index([code])
+}
+
+enum PolicyStatus {
+  DRAFT
+  PENDING
+  ACTIVE
+  EXPIRED
+  CANCELLED
+}
+
+enum PolicyPaymentStatus {
+  PENDING
+  PAID
+  PARTIAL
+  FAILED
+}
+
+enum PaymentMode {
+  CASH
+  UPI
+  CARD
+  NET_BANKING
+  CHEQUE
+}
+
+enum PaymentStatus {
+  PENDING
+  SUCCESS
+  FAILED
+  REFUNDED
+  PARTIAL
+}
+
+enum QuoteStatus {
+  DRAFT
+  SENT
+  ACCEPTED
+  REJECTED
+  EXPIRED
+}
+
+enum DocumentType {
+  AADHAAR
+  PAN
+  PASSPORT
+  PHOTO
+  POLICY
+  MEDICAL_REPORT
+  KYC
+  CHEQUE
+  OTHER
+}
+
+enum VerificationStatus {
+  PENDING
+  VERIFIED
+  REJECTED
+}
+
+enum RenewalStatus {
+  PENDING
+  REMINDER_SENT
+  RENEWED
+  EXPIRED
+  CANCELLED
+}
+
+enum NotificationType {
+  RENEWAL
+  PAYMENT
+  POLICY
+  QUOTATION
+  DOCUMENT
+  SYSTEM
+}
+
+enum NotificationChannel {
+  EMAIL
+  SMS
+  WHATSAPP
+  IN_APP
+}
+
+enum NotificationStatus {
+  PENDING
+  QUEUED
+  SENT
+  FAILED
+  READ
+}
+
+enum WorkflowState {
+  CREATED
+  PREMIUM_CALCULATED
+  QUOTATION_GENERATED
+  APPROVED
+  PAYMENT_PENDING
+  PAYMENT_COMPLETED
+  DOCUMENT_PENDING
+  DOCUMENT_UPLOADED
+  POLICY_ISSUED
+  COMPLETED
+}
+
+model Policy {
+  id            String              @id @default(cuid())
+  policyNumber  String              @unique
+  clientId      String
+  companyId     String
+  planId        String
+  agentId       String
+  sumInsured    Decimal             @db.Decimal(12, 2)
+  premiumAmount Decimal             @db.Decimal(12, 2)
+  gstAmount     Decimal             @db.Decimal(12, 2)
+  issueDate     DateTime
+  startDate     DateTime
+  expiryDate    DateTime
+  status        PolicyStatus        @default(PENDING)
+  paymentStatus PolicyPaymentStatus @default(PENDING)
+  remarks       String?
+  client        Client              @relation(fields: [clientId], references: [id])
+  company       Company             @relation(fields: [companyId], references: [id])
+  plan          Plan                @relation(fields: [planId], references: [id])
+  agent         User                @relation(fields: [agentId], references: [id])
+  createdAt     DateTime            @default(now())
+  updatedAt     DateTime            @updatedAt
+  deletedAt     DateTime?
+  payments      Payment[]
+  documents     Document[]
+  renewals      Renewal[]
+  workflows     Workflow[]
+  activityLogs  ActivityLog[]
+
+  @@index([policyNumber])
+  @@index([clientId])
+  @@index([companyId])
+  @@index([status])
+}
+
+model PremiumRate {
+  id         String    @id @default(cuid())
+  companyId  String
+  planId     String
+  ageFrom    Int
+  ageTo      Int
+  gender     Gender?
+  cityTier   String?
+  familyType String?
+  sumInsured Decimal   @db.Decimal(12, 2)
+  tenure     Int
+  premium    Decimal   @db.Decimal(12, 2)
+  gst        Decimal   @db.Decimal(12, 2)
+  isActive   Boolean   @default(true)
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+  deletedAt  DateTime?
+
+  company    Company   @relation(fields: [companyId], references: [id])
+  plan       Plan      @relation(fields: [planId], references: [id])
+
+  @@index([companyId, planId])
+  @@index([ageFrom, ageTo])
+}
+
+model Quotation {
+  id              String      @id @default(cuid())
+  quotationNumber String      @unique
+  clientId        String
+  companyId       String
+  planId          String
+  premiumRateId   String?
+  basePremium     Decimal     @db.Decimal(12, 2)
+  gst             Decimal     @db.Decimal(12, 2)
+  totalPremium    Decimal     @db.Decimal(12, 2)
+  validTill       DateTime
+  status          QuoteStatus @default(DRAFT)
+  remarks         String?
+  pdfPath         String?
+  createdById     String
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
+  client          Client      @relation(fields: [clientId], references: [id])
+  company         Company     @relation(fields: [companyId], references: [id])
+  plan            Plan        @relation(fields: [planId], references: [id])
+  createdBy       User        @relation(fields: [createdById], references: [id])
+  payments        Payment[]
+  documents       Document[]
+  workflows       Workflow[]
+
+  @@index([clientId])
+  @@index([companyId])
+  @@index([status])
+}
+
+model Payment {
+  id             String        @id @default(cuid())
+  receiptNumber  String        @unique
+  policyId       String
+  quotationId    String?
+  amount         Decimal       @db.Decimal(12, 2)
+  gst            Decimal       @db.Decimal(12, 2)
+  paymentMode    PaymentMode
+  paymentStatus  PaymentStatus @default(PENDING)
+  transactionId  String?
+  paymentGateway String?
+  paidAt         DateTime?
+  remarks        String?
+  createdById    String
+  updatedById    String?
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
+  deletedAt      DateTime?
+
+  policy         Policy        @relation(fields: [policyId], references: [id])
+  quotation      Quotation?    @relation(fields: [quotationId], references: [id])
+  createdBy      User          @relation("PaymentCreatedBy", fields: [createdById], references: [id])
+  updatedBy      User?         @relation("PaymentUpdatedBy", fields: [updatedById], references: [id])
+
+  @@index([receiptNumber])
+  @@index([policyId])
+  @@index([quotationId])
+  @@index([paymentStatus])
+}
+
+model Document {
+  id                 String             @id @default(cuid())
+  clientId           String
+  policyId           String?
+  quotationId        String?
+  documentType       DocumentType
+  fileName           String
+  originalFileName   String
+  mimeType           String
+  fileSize           Int
+  fileUrl            String
+  storageProvider    String
+  uploadedById       String
+  verifiedById       String?
+  verificationStatus VerificationStatus @default(PENDING)
+  remarks            String?
+  createdAt          DateTime           @default(now())
+  updatedAt          DateTime           @updatedAt
+  deletedAt          DateTime?
+
+  client             Client             @relation(fields: [clientId], references: [id])
+  policy             Policy?            @relation(fields: [policyId], references: [id])
+  quotation          Quotation?         @relation(fields: [quotationId], references: [id])
+  uploadedBy         User               @relation("DocumentUploadedBy", fields: [uploadedById], references: [id])
+  verifiedBy         User?              @relation("DocumentVerifiedBy", fields: [verifiedById], references: [id])
+
+  @@index([clientId])
+  @@index([policyId])
+  @@index([quotationId])
+  @@index([documentType])
+  @@index([verificationStatus])
+}
+
+model Renewal {
+  id                 String         @id @default(cuid())
+  policyId           String
+  clientId           String
+  dueDate            DateTime
+  renewalDate        DateTime?
+  previousPremium    Decimal        @db.Decimal(12, 2)
+  renewedPremium     Decimal?       @db.Decimal(12, 2)
+  renewalStatus      RenewalStatus  @default(PENDING)
+  reminderCount      Int            @default(0)
+  lastReminderSentAt DateTime?
+  assignedAgentId    String?
+  remarks            String?
+  createdAt          DateTime       @default(now())
+  updatedAt          DateTime       @updatedAt
+
+  policy             Policy         @relation(fields: [policyId], references: [id])
+  client             Client         @relation("ClientRenewals", fields: [clientId], references: [id])
+  assignedAgent      User?          @relation("AssignedAgentRenewals", fields: [assignedAgentId], references: [id])
+
+  @@index([policyId])
+  @@index([clientId])
+  @@index([dueDate])
+  @@index([renewalStatus])
+}
+
+model Notification {
+  id            String              @id @default(cuid())
+  title         String
+  message       String
+  type          NotificationType
+  recipientId   String
+  recipientType String              @default("CLIENT") // "CLIENT" or "USER"
+  status        NotificationStatus  @default(PENDING)
+  channel       NotificationChannel
+  scheduledAt   DateTime?
+  sentAt        DateTime?
+  readAt        DateTime?
+  errorMessage  String?
+  metadata      Json?
+  createdAt     DateTime            @default(now())
+  updatedAt     DateTime            @updatedAt
+
+  @@index([recipientId])
+  @@index([status])
+  @@index([scheduledAt])
+}
+
+model Workflow {
+  id            String          @id @default(cuid())
+  clientId      String
+  quotationId   String?
+  policyId      String?
+  currentState  WorkflowState   @default(CREATED)
+  remarks       String?
+  createdAt     DateTime        @default(now())
+  updatedAt     DateTime        @updatedAt
+
+  client        Client          @relation(fields: [clientId], references: [id])
+  quotation     Quotation?      @relation(fields: [quotationId], references: [id])
+  policy        Policy?         @relation(fields: [policyId], references: [id])
+
+  @@index([clientId])
+  @@index([quotationId])
+  @@index([policyId])
+  @@index([currentState])
+}
+
+model ActivityLog {
+  id            String     @id @default(cuid())
+  userId        String
+  action        String
+  module        String
+  description   String
+  policyId      String?
+  createdAt     DateTime   @default(now())
+
+  user          User       @relation(fields: [userId], references: [id])
+  policy        Policy?    @relation(fields: [policyId], references: [id])
+
+  @@index([userId])
+  @@index([policyId])
+}
+
+model AuditTrail {
+  id            String     @id @default(cuid())
+  userId        String?
+  tableName     String
+  recordId      String
+  action        String     // CREATE, UPDATE, DELETE
+  oldValue      Json?
+  newValue      Json?
+  ipAddress     String?
+  browser       String?
+  device        String?
+  createdAt     DateTime   @default(now())
+
+  user          User?      @relation(fields: [userId], references: [id])
+
+  @@index([tableName, recordId])
+  @@index([userId])
 }

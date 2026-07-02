@@ -1,0 +1,43 @@
+components:
+  schemas:
+    Company:
+      type: object
+      properties:
+        id:
+          type: string
+          description: Unique identifier
+        createdAt:
+          type: string
+          format: date-time
+      example:
+        id: "cuid12345"
+        createdAt: "2026-07-02T10:00:00Z"
+
+paths:
+  /api/v1/companys:
+    get:
+      summary: Get all companys
+      tags:
+        - Company
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  message:
+                    type: string
+                  data:
+                    type: array
+        "400":
+          description: Validation Error
+        "401":
+          description: Unauthorized - Authentication Required
+        "403":
+          description: Forbidden - Required Roles Missing

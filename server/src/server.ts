@@ -1,7 +1,10 @@
 import app from "./app";
+import { env } from "./config/env";
+import { logger } from "./utils/logger";
+import "./utils/queue"; // Initialize BullMQ workers
 
-const PORT = Number(process.env.PORT || 5000);
 
-app.listen(PORT, () => {
-  console.log(`🚀 Server running on port ${PORT}`);
+
+app.listen(env.PORT, () => {
+  logger.info(`🚀 Server running on port ${env.PORT}`);
 });

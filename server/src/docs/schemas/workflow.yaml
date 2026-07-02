@@ -1,0 +1,125 @@
+components:
+  schemas:
+    Workflow:
+      type: object
+      properties:
+        id:
+          type: string
+          description: Workflow Unique Identifier
+        clientId:
+          type: string
+          description: Tied Client ID
+        policyId:
+          type: string
+          description: Linked Policy ID (if issued)
+        currentState:
+          type: string
+          enum: [CREATED, PREMIUM_CALCULATED, QUOTATION_GENERATED, APPROVED, PAYMENT_PENDING, PAYMENT_COMPLETED, DOCUMENT_PENDING, DOCUMENT_UPLOADED, POLICY_ISSUED, COMPLETED]
+        createdAt:
+          type: string
+          format: date-time
+          
+    TimelineActivity:
+      type: object
+      properties:
+        stage:
+          type: string
+        description:
+          type: string
+        date:
+          type: string
+          format: date-time
+        user:
+          type: string
+
+paths:
+  /api/v1/workflow/create-policy:
+    post:
+      summary: Initialize a new Policy Workflow
+      tags: [Workflow]
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                clientId:
+                  type: string
+                  example: cuid12345
+      responses:
+        "201":
+          description: Workflow Created successfully
+
+  /api/v1/workflow/{id}:
+    get:
+      summary: Get Workflow Details
+      tags: [Workflow]
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Successful response
+
+  /api/v1/workflow/timeline/{policyId}:
+    get:
+      summary: Get Policy Issuance Timeline
+      tags: [Workflow]
+      parameters:
+        - in: path
+          name: policyId
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Timeline array
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/TimelineActivity'
+
+  /api/v1/workflow/{id}/issue:
+    post:
+      summary: Issue Policy (Completes Transaction)
+      description: Issues the policy, creates payment receipt, generates renewal, and triggers notifications in a single transaction.
+      tags: [Workflow]
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                companyId:
+                  type: string
+                planId:
+                  type: string
+                sumInsured:
+                  type: number
+                premiumAmount:
+                  type: number
+                gstAmount:
+                  type: number
+                paymentMode:
+                  type: string
+                  enum: [CASH, UPI, CARD, NET_BANKING, CHEQUE]
+      responses:
+        "200":
+          description: Transaction Completed Successfully
+        "400":
+          description: Invalid state transition or missing prerequisites.
