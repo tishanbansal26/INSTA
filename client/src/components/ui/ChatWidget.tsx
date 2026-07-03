@@ -61,14 +61,14 @@ export const ChatWidget: React.FC = () => {
           </div>
 
           {/* Chat History */}
-          <div className="flex-1 p-4 overflow-y-auto space-y-4 bg-gray-50/50">
+          <div className="flex-1 p-4 overflow-y-auto space-y-4 bg-background/50">
             {messages.map((msg) => (
               <div key={msg.id} className={`flex ${msg.sender === 'user' ? 'justify-end' : 'justify-start'}`}>
                 <div 
                   className={`max-w-[85%] p-3 rounded-2xl text-sm shadow-sm ${
                     msg.sender === 'user' 
                       ? 'bg-primary text-primary-foreground rounded-tr-sm' 
-                      : 'bg-white border border-border text-text rounded-tl-sm'
+                      : 'bg-surface-hover border border-border text-text rounded-tl-sm'
                   }`}
                 >
                   {msg.text}
@@ -77,23 +77,23 @@ export const ChatWidget: React.FC = () => {
             ))}
             {isLoading && (
               <div className="flex justify-start">
-                <div className="bg-white border border-border text-text p-3 rounded-2xl rounded-tl-sm text-sm shadow-sm flex space-x-1 items-center">
-                  <div className="w-2 h-2 bg-gray-300 rounded-full animate-bounce"></div>
-                  <div className="w-2 h-2 bg-gray-300 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
-                  <div className="w-2 h-2 bg-gray-300 rounded-full animate-bounce" style={{ animationDelay: '0.4s' }}></div>
+                <div className="bg-surface-hover border border-border text-text p-3 rounded-2xl rounded-tl-sm text-sm shadow-sm flex space-x-1 items-center">
+                  <div className="w-2 h-2 bg-text-secondary rounded-full animate-bounce"></div>
+                  <div className="w-2 h-2 bg-text-secondary rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
+                  <div className="w-2 h-2 bg-text-secondary rounded-full animate-bounce" style={{ animationDelay: '0.4s' }}></div>
                 </div>
               </div>
             )}
           </div>
 
           {/* Input Area */}
-          <form onSubmit={sendMessage} className="p-3 bg-white border-t border-border flex items-center space-x-2">
+          <form onSubmit={sendMessage} className="p-3 bg-surface border-t border-border flex items-center space-x-2">
             <input
               type="text"
               value={input}
               onChange={(e) => setInput(e.target.value)}
               placeholder="Ask anything..."
-              className="flex-1 bg-gray-100 border-transparent rounded-full px-4 py-2 text-sm focus:bg-white focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all"
+              className="flex-1 bg-background border-transparent rounded-full px-4 py-2 text-sm text-text focus:bg-surface-hover focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all"
             />
             <button 
               type="submit" 
