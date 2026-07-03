@@ -4,11 +4,13 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useLoginMutation } from '../hooks/useAuthApi';
 import { toast } from 'sonner';
+import { Eye, EyeOff } from 'lucide-react';
 
 export function Login() {
   const { setAuth } = useAuthStore();
   const [email, setEmail] = useState('admin@insureflow.com');
   const [password, setPassword] = useState('admin123');
+  const [showPassword, setShowPassword] = useState(false);
   
   const loginMutation = useLoginMutation();
 
@@ -22,7 +24,8 @@ export function Login() {
           toast.success('Logged in successfully!');
         },
         onError: (error: any) => {
-          toast.error(error.response?.data?.message || 'Login failed. Please check your credentials.');
+          console.error("Login failed:", error);
+          toast.error(error.response?.data?.message || 'Login failed. Please check your credentials or backend connection.');
         }
       }
     );
@@ -49,14 +52,23 @@ export function Login() {
           </div>
           <div className="space-y-2">
             <label className="text-sm font-medium text-text">Password</label>
-            <Input 
-              type="password" 
-              value={password}
-              onChange={e => setPassword(e.target.value)}
-              placeholder="••••••••" 
-              className="bg-background" 
-              required
-            />
+            <div className="relative">
+              <Input 
+                type={showPassword ? "text" : "password"} 
+                value={password}
+                onChange={e => setPassword(e.target.value)}
+                placeholder="••••••••" 
+                className="bg-background pr-10" 
+                required
+              />
+              <button
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-text"
+              >
+                {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+              </button>
+            </div>
           </div>
           <Button type="submit" className="w-full" disabled={loginMutation.isPending}>
             {loginMutation.isPending ? 'Signing in...' : 'Sign In'}

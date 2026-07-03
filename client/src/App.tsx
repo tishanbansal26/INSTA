@@ -5,6 +5,7 @@ import { MainLayout } from './components/layout/MainLayout';
 import { PortalLayout } from './modules/customer-portal/layout/PortalLayout';
 import { AgentLayout } from './modules/agent-portal/layout/AgentLayout';
 import { ThemeProvider } from './components/providers/ThemeProvider';
+import { Toaster } from 'sonner';
 
 // Lazy load Pages
 const Login = lazy(() => import('./modules/auth/pages/Login').then(m => ({ default: m.Login })));
@@ -69,8 +70,9 @@ const SuspenseFallback = () => (
 export default function App() {
   return (
     <ThemeProvider>
-    <BrowserRouter>
-      <Suspense fallback={<SuspenseFallback />}>
+      <Toaster position="top-right" richColors />
+      <BrowserRouter>
+        <Suspense fallback={<SuspenseFallback />}>
         <Routes>
           <Route element={<GuestRoute />}>
             <Route path="/login" element={<Login />} />
