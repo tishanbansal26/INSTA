@@ -19,6 +19,7 @@ export const AIAdvisor = () => {
     { role: 'ai', content: '👋 Hi! I am your InsureAI Advisor. How can I help you today?' }
   ]);
   const [showOptions, setShowOptions] = useState(true);
+  const [input, setInput] = useState('');
   const navigate = useNavigate();
 
   const handleOption = (option: string, route?: string) => {
@@ -42,6 +43,19 @@ export const AIAdvisor = () => {
       } else {
         setMessages(prev => [...prev, { role: 'ai', content: 'Our advisors are currently busy, but please leave your number and we will call you back in 5 minutes!' }]);
       }
+    }, 1000);
+  };
+
+  const handleSend = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!input.trim()) return;
+    
+    setMessages(prev => [...prev, { role: 'user', content: input }]);
+    setInput('');
+    setShowOptions(false);
+    
+    setTimeout(() => {
+      setMessages(prev => [...prev, { role: 'ai', content: 'Our AI advisors are currently assisting other customers. Please leave your contact number and a human agent will call you back shortly!' }]);
     }, 1000);
   };
 
@@ -114,12 +128,18 @@ export const AIAdvisor = () => {
               )}
             </div>
 
-            <div className="p-3 border-t border-border bg-surface flex gap-2">
-              <input type="text" placeholder="Type a message..." className="flex-1 px-3 py-2 bg-background border border-border rounded-lg text-sm focus:outline-none focus:border-primary" />
-              <button className="p-2 bg-primary text-white rounded-lg hover:bg-primary-hover">
+            <form onSubmit={handleSend} className="p-3 border-t border-border bg-surface flex gap-2">
+              <input 
+                type="text" 
+                value={input}
+                onChange={(e) => setInput(e.target.value)}
+                placeholder="Type a message..." 
+                className="flex-1 px-3 py-2 bg-background border border-border rounded-lg text-sm focus:outline-none focus:border-primary text-text" 
+              />
+              <button type="submit" disabled={!input.trim()} className="p-2 bg-primary text-white rounded-lg hover:bg-primary-hover disabled:opacity-50 disabled:cursor-not-allowed">
                 <Send className="w-4 h-4" />
               </button>
-            </div>
+            </form>
           </div>
         </div>
       )}
