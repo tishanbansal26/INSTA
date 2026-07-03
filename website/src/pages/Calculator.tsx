@@ -251,13 +251,31 @@ export const Calculator = () => {
                     <label className="block text-sm font-medium text-text mb-2 flex items-center gap-2">
                       <MapPin className="w-4 h-4 text-primary" /> City
                     </label>
-                    <input 
-                      type="text" 
-                      placeholder="e.g. Bangalore" 
+                    <select
                       value={formData.city}
                       onChange={e => setFormData({...formData, city: e.target.value})}
-                      className="w-full px-4 py-3 bg-background border border-border rounded-xl text-text focus:outline-none focus:border-primary" 
-                    />
+                      className="w-full px-4 py-3 bg-background border border-border rounded-xl text-text focus:outline-none focus:border-primary"
+                    >
+                      <option value="">Select your city...</option>
+                      <option value="Mumbai">Mumbai</option>
+                      <option value="Delhi">Delhi</option>
+                      <option value="Bangalore">Bangalore</option>
+                      <option value="Hyderabad">Hyderabad</option>
+                      <option value="Chennai">Chennai</option>
+                      <option value="Kolkata">Kolkata</option>
+                      <option value="Pune">Pune</option>
+                      <option value="Ahmedabad">Ahmedabad</option>
+                      <option value="Jaipur">Jaipur</option>
+                      <option value="Surat">Surat</option>
+                      <option value="Lucknow">Lucknow</option>
+                      <option value="Kanpur">Kanpur</option>
+                      <option value="Nagpur">Nagpur</option>
+                      <option value="Indore">Indore</option>
+                      <option value="Bhopal">Bhopal</option>
+                      <option value="Patna">Patna</option>
+                      <option value="Vadodara">Vadodara</option>
+                      <option value="Other">Other</option>
+                    </select>
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-text mb-2">Coverage Amount (₹)</label>
