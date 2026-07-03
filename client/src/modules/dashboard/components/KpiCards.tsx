@@ -1,5 +1,8 @@
 import { Users, ShieldCheck, DollarSign, Clock, ClipboardList, CheckCircle, XCircle } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { useDashboardOverview } from '@/hooks/useDashboard';
+import { SkeletonLoader } from '@/components/shared/SkeletonLoader';
+import { ErrorState } from '@/components/shared/ErrorState';
 
 interface KpiCardProps {
   title: string;
@@ -28,20 +31,35 @@ function KpiCard({ title, value, trend, isPositive, icon: Icon, className }: Kpi
 }
 
 export function KpiCards() {
+  const { data: overview, isLoading, isError, refetch } = useDashboardOverview();
+
+  if (isLoading) {
+    return <SkeletonLoader text="Loading dashboard metrics..." />;
+  }
+
+  if (isError || !overview) {
+    return <ErrorState title="Failed to load dashboard metrics" onRetry={refetch} />;
+  }
+
+  // Format currency
+  const formatCurrency = (amount: number) => {
+    return new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR' }).format(amount);
+  };
+
   return (
     <div className="space-y-6">
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        <KpiCard title="Total Clients" value="2,845" trend="+12% from last month" isPositive={true} icon={Users} />
-        <KpiCard title="Active Policies" value="1,420" trend="+5% from last month" isPositive={true} icon={ShieldCheck} />
-        <KpiCard title="Total Revenue" value="₹42,50,000" trend="+18% from last month" isPositive={true} icon={DollarSign} />
-        <KpiCard title="Pending Payments" value="18" trend="Requires attention" isPositive={false} icon={Clock} />
+        <KpiCard title="Total Clients" value={overview.totalClients.toString()} trend="Active in system" isPositive={true} icon={Users} />
+        <KpiCard title="Active Policies" value={overview.activePolicies.toString()} trend="Currently active" isPositive={true} icon={ShieldCheck} />
+        <KpiCard title="Total Revenue" value={formatCurrency(overview.totalRevenue)} trend="Lifetime collected" isPositive={true} icon={DollarSign} />
+        <KpiCard title="Pending Payments" value={overview.pendingPayments.toString()} trend="Requires attention" isPositive={false} icon={Clock} />
       </div>
       <h2 className="text-xl font-semibold text-text mt-6 mb-2">Claims & Settlements</h2>
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        <KpiCard title="Total Claims" value="156" trend="Active this year" isPositive={undefined} icon={ClipboardList} />
-        <KpiCard title="Under Review" value="24" trend="Pending surveyor/approval" isPositive={undefined} icon={Clock} />
-        <KpiCard title="Approved Claims" value="112" trend="+8% settlement rate" isPositive={true} icon={CheckCircle} />
-        <KpiCard title="Rejected Claims" value="20" trend="-2% from last month" isPositive={false} icon={XCircle} />
+        <KpiCard title="Total Claims" value="-" trend="Pending backend API" isPositive={undefined} icon={ClipboardList} />
+        <KpiCard title="Under Review" value="-" trend="Pending backend API" isPositive={undefined} icon={Clock} />
+        <KpiCard title="Approved Claims" value="-" trend="Pending backend API" isPositive={true} icon={CheckCircle} />
+        <KpiCard title="Rejected Claims" value="-" trend="Pending backend API" isPositive={false} icon={XCircle} />
       </div>
     </div>
   );

@@ -40,7 +40,16 @@ export const dashboardController = {
 
   revenue: async (req: Request, res: Response, next: NextFunction) => {
     try {
-      res.status(200).json(apiResponse(true, "Revenue stats fetched", []));
+      // Mocked up for now, would typically group by month in SQL
+      const revenueData = [
+        { name: 'Jan', value: 4000 },
+        { name: 'Feb', value: 3000 },
+        { name: 'Mar', value: 2000 },
+        { name: 'Apr', value: 2780 },
+        { name: 'May', value: 1890 },
+        { name: 'Jun', value: 2390 },
+      ];
+      res.status(200).json(apiResponse(true, "Revenue stats fetched", revenueData));
     } catch (error) { next(error); }
   },
 
@@ -52,7 +61,27 @@ export const dashboardController = {
 
   recentActivities: async (req: Request, res: Response, next: NextFunction) => {
     try {
-      res.status(200).json(apiResponse(true, "Recent activities fetched", []));
+      const activities = await prisma.auditTrail.findMany({
+        take: 5,
+        orderBy: { createdAt: 'desc' },
+        select: {
+          id: true,
+          action: true,
+          tableName: true,
+          createdAt: true,
+          user: { select: { name: true } }
+        }
+      });
+      
+      const formatted = activities.map(a => ({
+        id: a.id,
+        user: a.user?.name || 'System',
+        action: a.action,
+        target: a.tableName,
+        time: a.createdAt,
+      }));
+
+      res.status(200).json(apiResponse(true, "Recent activities fetched", formatted));
     } catch (error) { next(error); }
   }
 };

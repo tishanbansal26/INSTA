@@ -1,13 +1,23 @@
-import { FileText, CreditCard, RefreshCw, UserPlus, Zap, Bot, CalendarDays } from 'lucide-react';
+import { FileText, CreditCard, RefreshCw, UserPlus, Zap, Bot, CalendarDays, XCircle } from 'lucide-react';
 
-const activities = [
-  { id: 1, type: 'policy', user: 'Rahul Sharma', action: 'issued a new policy', target: 'HDFC Optima Restore', time: '10 mins ago', icon: FileText, color: 'text-primary', bg: 'bg-primary/10' },
-  { id: 2, type: 'payment', user: 'Priya Patel', action: 'received payment', target: '₹24,500 via UPI', time: '1 hour ago', icon: CreditCard, color: 'text-success', bg: 'bg-success/10' },
-  { id: 3, type: 'renewal', user: 'System', action: 'sent renewal reminder', target: 'Anil Kumar', time: '2 hours ago', icon: RefreshCw, color: 'text-warning', bg: 'bg-warning/10' },
-  { id: 4, type: 'client', user: 'Admin', action: 'added new client', target: 'Neha Gupta', time: '5 hours ago', icon: UserPlus, color: 'text-primary', bg: 'bg-primary/10' },
-];
+import { useRecentActivities } from '@/hooks/useDashboard';
+import { SkeletonLoader } from '@/components/shared/SkeletonLoader';
+import { ErrorState } from '@/components/shared/ErrorState';
+import { formatDistanceToNow } from 'date-fns';
+
+const getIconForAction = (action: string) => {
+  if (action.includes('CREATE')) return { icon: UserPlus, color: 'text-success', bg: 'bg-success/10' };
+  if (action.includes('UPDATE')) return { icon: RefreshCw, color: 'text-primary', bg: 'bg-primary/10' };
+  if (action.includes('DELETE')) return { icon: XCircle, color: 'text-danger', bg: 'bg-danger/10' };
+  return { icon: FileText, color: 'text-primary', bg: 'bg-primary/10' };
+};
 
 export function RecentActivities() {
+  const { data: activities, isLoading, isError, refetch } = useRecentActivities();
+
+  if (isLoading) return <div className="glass p-6 rounded-xl h-full flex items-center justify-center"><SkeletonLoader text="Loading activities..." /></div>;
+  if (isError || !activities) return <div className="glass p-6 rounded-xl h-full"><ErrorState title="Failed to load activities" onRetry={refetch} /></div>;
+
   return (
     <div className="glass p-6 rounded-xl">
       <div className="flex justify-between items-center mb-6">
@@ -15,19 +25,25 @@ export function RecentActivities() {
         <button className="text-sm text-primary hover:underline">View All</button>
       </div>
       <div className="space-y-6">
-        {activities.map((activity) => (
-          <div key={activity.id} className="flex items-start">
-            <div className={`p-2 rounded-full ${activity.bg} ${activity.color} mr-4`}>
-              <activity.icon className="w-4 h-4" />
+        {activities.length === 0 && <p className="text-sm text-muted-foreground">No recent activities.</p>}
+        {activities.map((activity) => {
+          const { icon: Icon, color, bg } = getIconForAction(activity.action);
+          return (
+            <div key={activity.id} className="flex items-start">
+              <div className={`p-2 rounded-full ${bg} ${color} mr-4`}>
+                <Icon className="w-4 h-4" />
+              </div>
+              <div className="flex-1">
+                <p className="text-sm text-text">
+                  <span className="font-medium">{activity.user}</span> {activity.action} <span className="font-medium text-text">{activity.target}</span>
+                </p>
+                <p className="text-xs text-muted-foreground mt-1">
+                  {formatDistanceToNow(new Date(activity.time), { addSuffix: true })}
+                </p>
+              </div>
             </div>
-            <div className="flex-1">
-              <p className="text-sm text-text">
-                <span className="font-medium">{activity.user}</span> {activity.action} <span className="font-medium text-text">{activity.target}</span>
-              </p>
-              <p className="text-xs text-muted-foreground mt-1">{activity.time}</p>
-            </div>
-          </div>
-        ))}
+          );
+        })}
       </div>
     </div>
   );

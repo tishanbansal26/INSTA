@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useAuthStore } from '@/store/auth.store';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { useLoginMutation } from '../hooks/useAuthApi';
+import { useLoginMutation } from '../../../hooks/useAuth';
 import { toast } from 'sonner';
 import { Eye, EyeOff } from 'lucide-react';
 
