@@ -2,6 +2,11 @@ import { Request, Response, NextFunction } from "express";
 import prisma from "../config/prisma";
 
 export function auditMiddleware(req: Request, res: Response, next: NextFunction) {
+  // Skip audit logging for authentication endpoints to avoid foreign key constraints with unauthenticated users
+  if (req.originalUrl.includes('/auth/')) {
+    return next();
+  }
+
   // We capture the original send to inspect response before it leaves
   const originalSend = res.send;
 

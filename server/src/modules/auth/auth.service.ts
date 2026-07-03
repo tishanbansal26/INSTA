@@ -47,7 +47,7 @@ export const authService = {
     }
   },
 
-  login: async (input: LoginInput): Promise<AuthTokens> => {
+  login: async (input: LoginInput): Promise<any> => {
     try {
       const user = await authRepository.findByEmail(input.email);
       if (!user) {
@@ -65,7 +65,11 @@ export const authService = {
       await authRepository.updateLastLogin(user.id);
       await authRepository.createRefreshToken(user.id, refreshToken, getRefreshExpiry());
 
-      return { accessToken, refreshToken };
+      return { 
+        user: { id: user.id, email: user.email, name: user.name, role: user.role }, 
+        token: accessToken, 
+        refreshToken 
+      };
     } catch (error) {
       handleDatabaseError(error);
       throw error;
