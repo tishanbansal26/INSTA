@@ -2,28 +2,31 @@ import { Outlet, Navigate } from 'react-router-dom';
 import { useAuthStore } from '@/store/auth.store';
 
 export const ProtectedRoute = () => {
-  const { isAuthenticated, isAdmin } = useAuthStore();
+  const { isAuthenticated, user } = useAuthStore();
 
   if (!isAuthenticated) {
     return <Navigate to="/login" replace />;
   }
 
-  if (!isAdmin) {
-    // If not admin but authenticated, they shouldn't be on admin routes
-    return <Navigate to="/portal" replace />;
+  const role = user?.role?.toUpperCase();
+  if (role === 'CUSTOMER') {
+    return <Navigate to="/portal/dashboard" replace />;
+  }
+  if (role === 'AGENT') {
+    return <Navigate to="/agent/dashboard" replace />;
   }
 
   return <Outlet />;
 };
 
 export const CustomerRoute = () => {
-  const { isAuthenticated, isCustomer } = useAuthStore();
+  const { isAuthenticated, user } = useAuthStore();
 
   if (!isAuthenticated) {
     return <Navigate to="/login" replace />;
   }
 
-  if (!isCustomer) {
+  if (user?.role?.toUpperCase() !== 'CUSTOMER') {
     return <Navigate to="/dashboard" replace />;
   }
 
@@ -31,13 +34,13 @@ export const CustomerRoute = () => {
 };
 
 export const AgentRoute = () => {
-  const { isAuthenticated, isAgent } = useAuthStore();
+  const { isAuthenticated, user } = useAuthStore();
 
   if (!isAuthenticated) {
     return <Navigate to="/login" replace />;
   }
 
-  if (!isAgent) {
+  if (user?.role?.toUpperCase() !== 'AGENT') {
     return <Navigate to="/dashboard" replace />;
   }
 
@@ -45,11 +48,12 @@ export const AgentRoute = () => {
 };
 
 export const GuestRoute = () => {
-  const { isAuthenticated, isCustomer, isAgent } = useAuthStore();
+  const { isAuthenticated, user } = useAuthStore();
 
   if (isAuthenticated) {
-    if (isCustomer) return <Navigate to="/portal/dashboard" replace />;
-    if (isAgent) return <Navigate to="/agent/dashboard" replace />;
+    const role = user?.role?.toUpperCase();
+    if (role === 'CUSTOMER') return <Navigate to="/portal/dashboard" replace />;
+    if (role === 'AGENT') return <Navigate to="/agent/dashboard" replace />;
     return <Navigate to="/dashboard" replace />;
   }
 

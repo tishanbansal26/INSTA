@@ -35,6 +35,7 @@ export const PortalLayout = () => {
     { label: 'My Claims', path: '/portal/claims', icon: FileCheck },
     { label: 'Documents', path: '/portal/documents', icon: FileText },
     { label: 'Quotations', path: '/portal/quotations', icon: FileText },
+    { label: 'Notifications', path: '/portal/notifications', icon: Bell },
     { label: 'Support Tickets', path: '/portal/support', icon: HelpCircle },
     { label: 'AI Assistant', path: '/portal/ai', icon: Bot },
     { label: 'Profile', path: '/portal/profile', icon: UserCircle },
@@ -117,10 +118,10 @@ export const PortalLayout = () => {
         <header className="h-16 hidden md:flex items-center justify-between px-8 bg-background border-b border-border shrink-0">
           <div className="text-lg font-medium">Customer Portal</div>
           <div className="flex items-center gap-4">
-            <button className="text-text-secondary hover:text-primary transition-colors relative">
+            <NavLink to="/portal/notifications" className="text-text-secondary hover:text-primary transition-colors relative">
               <Bell className="w-5 h-5" />
               <span className="absolute -top-0.5 -right-0.5 w-2 h-2 bg-red-500 rounded-full"></span>
-            </button>
+            </NavLink>
           </div>
         </header>
         <div className="flex-1 overflow-y-auto p-4 md:p-8">

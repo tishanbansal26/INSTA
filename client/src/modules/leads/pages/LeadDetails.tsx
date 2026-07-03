@@ -1,121 +1,177 @@
-import { useState, useEffect, useCallback } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
-import { apiClient as api } from '../../../services/apiClient';
-import { Button } from '../../../components/ui/button';
-import { Phone, Mail, MapPin, Clock, Target, UserCheck } from 'lucide-react';
+import { useState } from 'react';
+import { 
+  User, 
+  Phone, 
+  Mail, 
+  Calendar, 
+  PhoneCall, 
+  CheckCircle2, 
+  AlertCircle,
+  MessageSquare,
+  FileText,
+  Clock
+} from 'lucide-react';
 
-export default function LeadDetails() {
-  const { id } = useParams();
-  const navigate = useNavigate();
-  const [lead, setLead] = useState<any>(null);
-  const [activeTab, setActiveTab] = useState('INFO');
-
-  const fetchLead = useCallback(async () => {
-    try {
-      const res = await api.get(`/leads/${id}`);
-      setLead(res.data);
-    } catch (error) {
-      console.error(error);
-    }
-  }, [id]);
-
-  useEffect(() => {
-    fetchLead();
-  }, [fetchLead]);
-
-  const handleConvert = async () => {
-    try {
-      const res = await api.post(`/leads/${id}/convert`, { userId: 'system' });
-      alert(res.data.message);
-      fetchLead();
-    } catch (error: any) {
-      alert(error.response?.data?.error || 'Conversion failed');
-    }
-  };
-
-  if (!lead) return <div className="p-8 text-center text-gray-500 animate-pulse">Loading Lead CRM...</div>;
+export const LeadDetails = () => {
+  const [activeTab, setActiveTab] = useState('notes');
 
   return (
-    <div className="space-y-6">
-      {/* Header Profile */}
-      <div className="bg-white shadow-sm rounded-xl border border-gray-100 p-6 flex items-start justify-between">
-        <div>
-          <h1 className="text-3xl font-bold text-gray-900">{lead.name}</h1>
-          <p className="text-gray-500 flex items-center gap-2 mt-2">
-            <Phone className="w-4 h-4" /> {lead.mobile}
-            {lead.email && <><Mail className="w-4 h-4 ml-4" /> {lead.email}</>}
-            {lead.city && <><MapPin className="w-4 h-4 ml-4" /> {lead.city}</>}
-          </p>
+    <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
+      
+      {/* Lead Profile Header */}
+      <div className="bg-surface border border-border rounded-xl p-6 md:p-8 flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
+        <div className="flex items-center gap-6">
+          <div className="w-16 h-16 bg-blue-500/10 text-blue-500 rounded-full flex items-center justify-center font-bold text-2xl">
+            A
+          </div>
+          <div>
+            <div className="flex items-center gap-3 mb-1">
+              <h1 className="text-2xl font-bold text-text">Amit Patel</h1>
+              <span className="px-2.5 py-0.5 bg-blue-500/10 text-blue-500 text-xs font-bold rounded-full border border-blue-500/20">HOT LEAD</span>
+            </div>
+            <div className="flex flex-wrap items-center gap-4 text-sm text-text-secondary mt-2">
+              <span className="flex items-center gap-1"><Phone className="w-4 h-4" /> +91 9988776655</span>
+              <span className="flex items-center gap-1"><Mail className="w-4 h-4" /> amit.patel@example.com</span>
+            </div>
+          </div>
         </div>
-        <div className="text-right space-y-3">
-          <span className="px-3 py-1 bg-blue-50 text-blue-700 text-sm font-medium rounded-full border border-blue-200">
-            {lead.status}
-          </span>
-          <br/>
-          {lead.status === 'WON' && (
-            <Button onClick={handleConvert} className="bg-green-600 hover:bg-green-700 text-white">
-              <UserCheck className="w-4 h-4 mr-2" /> Convert to Client
-            </Button>
-          )}
-          {lead.status === 'CONVERTED' && (
-            <Button onClick={() => navigate(`/clients/${lead.convertedClientId}`)} variant="outline">
-              View Client Profile
-            </Button>
-          )}
-        </div>
-      </div>
 
-      {/* Tabs */}
-      <div className="flex space-x-1 bg-white p-1 rounded-lg shadow-sm border border-gray-100">
-        {['INFO', 'FOLLOW_UPS', 'TASKS', 'NOTES'].map(tab => (
-          <button
-            key={tab}
-            onClick={() => setActiveTab(tab)}
-            className={`px-6 py-2.5 text-sm font-medium rounded-md transition-all ${
-              activeTab === tab ? 'bg-primary text-white shadow' : 'text-gray-600 hover:bg-gray-50'
-            }`}
-          >
-            {tab.replace('_', ' ')}
+        <div className="flex items-center gap-3">
+          <button className="flex items-center gap-2 px-4 py-2 bg-surface border border-border text-text font-medium rounded-lg hover:border-primary transition-all">
+            <PhoneCall className="w-4 h-4" /> Log Call
           </button>
-        ))}
+          <button className="flex items-center gap-2 px-6 py-2 bg-green-500 text-white font-medium rounded-lg hover:bg-green-600 shadow-lg shadow-green-500/20 transition-all">
+            <CheckCircle2 className="w-4 h-4" /> Convert to Client
+          </button>
+        </div>
       </div>
 
-      {/* Tab Content */}
-      <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 min-h-[400px]">
-        {activeTab === 'INFO' && (
-          <div className="grid grid-cols-2 gap-8">
-            <div>
-              <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2"><Target className="w-5 h-5 text-primary" /> Lead Details</h3>
-              <div className="space-y-4 text-sm">
-                <div className="flex justify-between border-b pb-2"><span className="text-gray-500">Source:</span> <span className="font-medium">{lead.source}</span></div>
-                <div className="flex justify-between border-b pb-2"><span className="text-gray-500">Priority:</span> <span className="font-medium">{lead.priority}</span></div>
-                <div className="flex justify-between border-b pb-2"><span className="text-gray-500">Interested In:</span> <span className="font-medium">{lead.interestedProduct || 'N/A'}</span></div>
-                <div className="flex justify-between border-b pb-2"><span className="text-gray-500">Budget:</span> <span className="font-medium">₹{lead.budget || '0'}</span></div>
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        
+        {/* Left Column - Details */}
+        <div className="lg:col-span-1 space-y-6">
+          <div className="bg-surface border border-border rounded-xl p-6">
+            <h3 className="font-bold text-text mb-4">Lead Information</h3>
+            <div className="space-y-4 text-sm">
+              <div>
+                <span className="block text-text-secondary mb-1">Source</span>
+                <span className="font-medium text-text">Facebook Ad Campaign</span>
+              </div>
+              <div>
+                <span className="block text-text-secondary mb-1">Interested In</span>
+                <span className="font-medium text-text">Health Insurance (Family Floater)</span>
+              </div>
+              <div>
+                <span className="block text-text-secondary mb-1">Assigned To</span>
+                <div className="flex items-center gap-2 mt-1">
+                  <div className="w-6 h-6 bg-primary/20 text-primary rounded-full flex items-center justify-center text-xs font-bold">R</div>
+                  <span className="font-medium text-text">Ravi Kumar</span>
+                </div>
+              </div>
+              <div>
+                <span className="block text-text-secondary mb-1">Created Date</span>
+                <span className="font-medium text-text">14 Oct 2026</span>
               </div>
             </div>
           </div>
-        )}
-        
-        {activeTab === 'FOLLOW_UPS' && (
-          <div className="space-y-6">
-            <h3 className="text-lg font-semibold text-gray-900 flex items-center gap-2"><Phone className="w-5 h-5 text-primary" /> Interaction Timeline</h3>
-            <div className="border-l-2 border-primary pl-4 space-y-6 ml-2">
-              {lead.followUps?.length === 0 && <p className="text-gray-500">No follow-ups logged yet.</p>}
-              {lead.followUps?.map((f: any) => (
-                <div key={f.id} className="relative">
-                  <div className="absolute -left-6 top-1 w-4 h-4 rounded-full bg-primary border-4 border-white shadow"></div>
-                  <div className="bg-gray-50 p-4 rounded-lg border border-gray-100">
-                    <div className="flex justify-between items-center mb-2">
-                      <span className="font-semibold text-gray-900">{f.type} - {f.outcome}</span>
-                      <span className="text-xs text-gray-500 flex items-center gap-1"><Clock className="w-3 h-3"/> {new Date(f.date).toLocaleDateString()}</span>
+
+          <div className="bg-orange-500/5 border border-orange-500/20 rounded-xl p-6">
+            <div className="flex items-center gap-2 mb-2 text-orange-500 font-bold">
+              <AlertCircle className="w-5 h-5" /> Next Follow-up
+            </div>
+            <p className="text-text font-medium">Call tomorrow at 11:00 AM to discuss premium breakdown.</p>
+          </div>
+        </div>
+
+        {/* Right Column - Activity */}
+        <div className="lg:col-span-2">
+          <div className="bg-surface border border-border rounded-xl overflow-hidden h-full flex flex-col">
+            <div className="flex border-b border-border bg-background/50">
+              <button 
+                onClick={() => setActiveTab('notes')}
+                className={`flex-1 py-3 text-sm font-bold border-b-2 transition-colors ${activeTab === 'notes' ? 'border-primary text-primary' : 'border-transparent text-text-secondary hover:text-text'}`}
+              >
+                Notes & Activity
+              </button>
+              <button 
+                onClick={() => setActiveTab('tasks')}
+                className={`flex-1 py-3 text-sm font-bold border-b-2 transition-colors ${activeTab === 'tasks' ? 'border-primary text-primary' : 'border-transparent text-text-secondary hover:text-text'}`}
+              >
+                Tasks
+              </button>
+            </div>
+
+            <div className="flex-1 p-6 overflow-y-auto">
+              {activeTab === 'notes' && (
+                <div className="space-y-6">
+                  {/* Add Note Input */}
+                  <div className="flex gap-4">
+                    <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
+                      <User className="w-5 h-5 text-primary" />
+                    </div>
+                    <div className="flex-1">
+                      <textarea 
+                        placeholder="Add a note or log activity..."
+                        className="w-full bg-background border border-border rounded-lg p-3 text-sm focus:outline-none focus:border-primary resize-none h-24"
+                      ></textarea>
+                      <div className="flex justify-end mt-2">
+                        <button className="px-4 py-2 bg-primary text-white text-sm font-bold rounded-lg hover:bg-primary-hover transition-colors">
+                          Save Note
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Activity Timeline */}
+                  <div className="space-y-6 mt-8 relative before:absolute before:inset-0 before:ml-5 before:-translate-x-px md:before:mx-auto md:before:translate-x-0 before:h-full before:w-0.5 before:bg-gradient-to-b before:from-transparent before:via-border before:to-transparent">
+                    <div className="relative flex items-center justify-between md:justify-normal md:odd:flex-row-reverse group is-active">
+                      <div className="flex items-center justify-center w-10 h-10 rounded-full border border-white bg-surface text-text-secondary group-[.is-active]:bg-primary group-[.is-active]:text-white group-[.is-active]:shadow shrink-0 md:order-1 md:group-odd:-translate-x-1/2 md:group-even:translate-x-1/2 shadow">
+                        <PhoneCall className="w-4 h-4" />
+                      </div>
+                      <div className="w-[calc(100%-4rem)] md:w-[calc(50%-2.5rem)] p-4 rounded border border-border bg-background shadow">
+                        <div className="flex items-center justify-between mb-1">
+                          <h4 className="font-bold text-text text-sm">Follow-up Call</h4>
+                          <span className="text-xs text-text-secondary">Today, 2:00 PM</span>
+                        </div>
+                        <p className="text-sm text-text-secondary">Discussed the Niva Bupa Reassure plan. He is interested but wants to compare it with HDFC Ergo Optima Restore. Sending comparison quote.</p>
+                      </div>
+                    </div>
+
+                    <div className="relative flex items-center justify-between md:justify-normal md:odd:flex-row-reverse group">
+                      <div className="flex items-center justify-center w-10 h-10 rounded-full border border-white bg-surface text-text-secondary shrink-0 md:order-1 md:group-odd:-translate-x-1/2 md:group-even:translate-x-1/2 shadow">
+                        <MessageSquare className="w-4 h-4" />
+                      </div>
+                      <div className="w-[calc(100%-4rem)] md:w-[calc(50%-2.5rem)] p-4 rounded border border-border bg-background shadow">
+                        <div className="flex items-center justify-between mb-1">
+                          <h4 className="font-bold text-text text-sm">Initial Inquiry</h4>
+                          <span className="text-xs text-text-secondary">14 Oct, 10:15 AM</span>
+                        </div>
+                        <p className="text-sm text-text-secondary">Lead received from Facebook Ad "Family Health 2026".</p>
+                      </div>
                     </div>
                   </div>
                 </div>
-              ))}
+              )}
+
+              {activeTab === 'tasks' && (
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between p-4 border border-border rounded-lg bg-background">
+                    <div className="flex items-center gap-4">
+                      <input type="checkbox" className="w-5 h-5 rounded border-border text-primary focus:ring-primary" />
+                      <div>
+                        <h4 className="font-bold text-text text-sm">Send Comparison Quote</h4>
+                        <p className="text-xs text-text-secondary flex items-center gap-1 mt-1">
+                          <Clock className="w-3 h-3" /> Due Today
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
             </div>
           </div>
-        )}
+        </div>
       </div>
     </div>
   );
-}
+};

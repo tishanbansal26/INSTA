@@ -1,140 +1,121 @@
-import { useState } from 'react';
-import { User, Lock, Palette, Bell, Building2, Users, ShieldCheck } from 'lucide-react';
-import { useAuthStore } from '@/store/auth.store';
+import { useThemeStore } from '@/store/theme.store';
+import { 
+  Monitor, 
+  Moon, 
+  Sun, 
+  Palette, 
+  Layout, 
+  Zap 
+} from 'lucide-react';
 
-const TABS = [
-  { id: 'profile', label: 'Profile', icon: User },
-  { id: 'security', label: 'Security', icon: Lock },
-  { id: 'theme', label: 'Theme', icon: Palette },
-  { id: 'notifications', label: 'Notifications', icon: Bell },
-  { id: 'agency', label: 'Agency Info', icon: Building2 },
-  { id: 'users', label: 'User Management', icon: Users, adminOnly: true },
-  { id: 'roles', label: 'Roles & Permissions', icon: ShieldCheck, adminOnly: true },
-];
-
-export default function Settings() {
-  const [activeTab, setActiveTab] = useState('profile');
-  const { user } = useAuthStore();
-
-  const renderContent = () => {
-    switch (activeTab) {
-      case 'profile':
-        return (
-          <div className="space-y-6">
-            <h2 className="text-lg font-medium">Profile Settings</h2>
-            <div className="space-y-4 max-w-xl">
-              <div>
-                <label className="block text-sm font-medium mb-1">Full Name</label>
-                <input type="text" className="w-full p-2 rounded-md border border-border bg-background" defaultValue={user?.name || ''} />
-              </div>
-              <div>
-                <label className="block text-sm font-medium mb-1">Email Address</label>
-                <input type="email" className="w-full p-2 rounded-md border border-border bg-background" defaultValue={user?.email || ''} readOnly />
-              </div>
-              <button className="bg-primary text-primary-foreground px-4 py-2 rounded-md">Save Changes</button>
-            </div>
-          </div>
-        );
-      case 'security':
-        return (
-          <div className="space-y-6">
-            <h2 className="text-lg font-medium">Security</h2>
-            <div className="space-y-4 max-w-xl">
-              <p className="text-sm text-muted-foreground">Manage your password and security preferences here to avoid browser warnings.</p>
-              <div>
-                <label className="block text-sm font-medium mb-1">Current Password</label>
-                <input type="password" placeholder="••••••••" className="w-full p-2 rounded-md border border-border bg-background" />
-              </div>
-              <div>
-                <label className="block text-sm font-medium mb-1">New Password</label>
-                <input type="password" placeholder="••••••••" className="w-full p-2 rounded-md border border-border bg-background" />
-              </div>
-              <button className="bg-primary text-primary-foreground px-4 py-2 rounded-md">Update Password</button>
-            </div>
-          </div>
-        );
-      case 'theme':
-        return (
-          <div className="space-y-6">
-            <h2 className="text-lg font-medium">Appearance</h2>
-            <p className="text-sm text-muted-foreground">Customize how InsureFlow looks on your device.</p>
-            <div className="flex gap-4">
-              <div className="border border-border p-4 rounded-lg cursor-pointer hover:border-primary">
-                <div className="w-20 h-16 bg-white rounded shadow-sm mb-2"></div>
-                <p className="text-center text-sm font-medium">Light</p>
-              </div>
-              <div className="border-2 border-primary p-4 rounded-lg cursor-pointer">
-                <div className="w-20 h-16 bg-slate-900 rounded shadow-sm mb-2"></div>
-                <p className="text-center text-sm font-medium">Dark</p>
-              </div>
-            </div>
-          </div>
-        );
-      case 'notifications':
-        return (
-          <div className="space-y-6">
-            <h2 className="text-lg font-medium">Notification Preferences</h2>
-            <div className="space-y-4 max-w-xl">
-              <label className="flex items-center space-x-3">
-                <input type="checkbox" defaultChecked className="rounded border-gray-300" />
-                <span>Email me when a policy is about to expire</span>
-              </label>
-              <label className="flex items-center space-x-3">
-                <input type="checkbox" defaultChecked className="rounded border-gray-300" />
-                <span>Notify me about new claims</span>
-              </label>
-            </div>
-          </div>
-        );
-      case 'agency':
-      case 'users':
-      case 'roles':
-        return (
-          <div className="space-y-6">
-            <h2 className="text-lg font-medium capitalize">{activeTab.replace('-', ' ')}</h2>
-            <p className="text-sm text-muted-foreground">This administrative module is under construction.</p>
-          </div>
-        );
-      default:
-        return null;
-    }
-  };
+export const Settings = () => {
+  const { theme, setTheme, accent, setAccent, compactMode, setCompactMode, animations, setAnimations } = useThemeStore();
 
   return (
-    <div className="max-w-6xl mx-auto space-y-6">
+    <div className="space-y-6 max-w-4xl pb-20">
+      
       <div>
-        <h1 className="text-3xl font-bold tracking-tight">Settings</h1>
-        <p className="text-muted-foreground mt-2">Manage your account settings and preferences.</p>
+        <h1 className="text-2xl font-black text-text">Settings</h1>
+        <p className="text-text-secondary mt-1">Manage your application preferences and theme.</p>
       </div>
 
-      <div className="flex flex-col md:flex-row gap-8">
-        <aside className="w-full md:w-64 shrink-0">
-          <nav className="flex flex-col space-y-1">
-            {TABS.filter(t => !t.adminOnly || user?.role === 'ADMIN').map((tab) => {
-              const Icon = tab.icon;
-              const isActive = activeTab === tab.id;
-              return (
-                <button
-                  key={tab.id}
-                  onClick={() => setActiveTab(tab.id)}
-                  className={`flex items-center space-x-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
-                    isActive
-                      ? 'bg-primary/10 text-primary'
-                      : 'text-muted-foreground hover:bg-secondary hover:text-text'
-                  }`}
-                >
-                  <Icon className="w-4 h-4" />
-                  <span>{tab.label}</span>
-                </button>
-              );
-            })}
-          </nav>
-        </aside>
+      <div className="bg-surface border border-border rounded-xl p-6">
+        <h2 className="text-lg font-bold text-text flex items-center gap-2 mb-6">
+          <Palette className="w-5 h-5 text-primary" /> Appearance
+        </h2>
 
-        <div className="flex-1 bg-surface border border-border rounded-xl p-6 shadow-sm min-h-[500px]">
-          {renderContent()}
+        <div className="space-y-8">
+          
+          {/* Theme Selection */}
+          <div>
+            <label className="block text-sm font-bold text-text mb-3">Theme Preference</label>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              
+              <button 
+                onClick={() => setTheme('light')}
+                className={`flex items-center gap-3 p-4 rounded-xl border-2 transition-all ${theme === 'light' ? 'border-primary bg-primary/5' : 'border-border bg-background hover:border-primary/50'}`}
+              >
+                <Sun className={`w-5 h-5 ${theme === 'light' ? 'text-primary' : 'text-text-secondary'}`} />
+                <span className={`font-medium ${theme === 'light' ? 'text-primary' : 'text-text'}`}>Light Mode</span>
+              </button>
+
+              <button 
+                onClick={() => setTheme('dark')}
+                className={`flex items-center gap-3 p-4 rounded-xl border-2 transition-all ${theme === 'dark' ? 'border-primary bg-primary/5' : 'border-border bg-background hover:border-primary/50'}`}
+              >
+                <Moon className={`w-5 h-5 ${theme === 'dark' ? 'text-primary' : 'text-text-secondary'}`} />
+                <span className={`font-medium ${theme === 'dark' ? 'text-primary' : 'text-text'}`}>Dark Mode</span>
+              </button>
+
+              <button 
+                onClick={() => setTheme('system')}
+                className={`flex items-center gap-3 p-4 rounded-xl border-2 transition-all ${theme === 'system' ? 'border-primary bg-primary/5' : 'border-border bg-background hover:border-primary/50'}`}
+              >
+                <Monitor className={`w-5 h-5 ${theme === 'system' ? 'text-primary' : 'text-text-secondary'}`} />
+                <span className={`font-medium ${theme === 'system' ? 'text-primary' : 'text-text'}`}>System Sync</span>
+              </button>
+            </div>
+          </div>
+
+          {/* Accent Color Selection */}
+          <div className="pt-6 border-t border-border">
+            <label className="block text-sm font-bold text-text mb-3">Accent Color</label>
+            <div className="flex gap-4">
+              <button 
+                onClick={() => setAccent('blue')}
+                className={`w-12 h-12 rounded-full bg-blue-500 flex items-center justify-center transition-transform ${accent === 'blue' ? 'scale-110 ring-4 ring-blue-500/30' : 'hover:scale-105'}`}
+              ></button>
+              <button 
+                onClick={() => setAccent('emerald')}
+                className={`w-12 h-12 rounded-full bg-emerald-500 flex items-center justify-center transition-transform ${accent === 'emerald' ? 'scale-110 ring-4 ring-emerald-500/30' : 'hover:scale-105'}`}
+              ></button>
+              <button 
+                onClick={() => setAccent('purple')}
+                className={`w-12 h-12 rounded-full bg-purple-500 flex items-center justify-center transition-transform ${accent === 'purple' ? 'scale-110 ring-4 ring-purple-500/30' : 'hover:scale-105'}`}
+              ></button>
+            </div>
+            <p className="text-xs text-text-secondary mt-3">Changes the primary accent color across the application. (Preview feature)</p>
+          </div>
+
+          {/* Additional Toggles */}
+          <div className="pt-6 border-t border-border space-y-4">
+            
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <Layout className="w-5 h-5 text-text-secondary" />
+                <div>
+                  <p className="font-bold text-text text-sm">Compact Mode</p>
+                  <p className="text-xs text-text-secondary">Reduce whitespace and padding for higher data density.</p>
+                </div>
+              </div>
+              <button 
+                onClick={() => setCompactMode(!compactMode)}
+                className={`w-12 h-6 rounded-full transition-colors relative ${compactMode ? 'bg-primary' : 'bg-border'}`}
+              >
+                <div className={`w-4 h-4 rounded-full bg-white absolute top-1 transition-all ${compactMode ? 'left-7' : 'left-1'}`}></div>
+              </button>
+            </div>
+
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <Zap className="w-5 h-5 text-text-secondary" />
+                <div>
+                  <p className="font-bold text-text text-sm">Enable Animations</p>
+                  <p className="text-xs text-text-secondary">Toggle micro-animations and transitions.</p>
+                </div>
+              </div>
+              <button 
+                onClick={() => setAnimations(!animations)}
+                className={`w-12 h-6 rounded-full transition-colors relative ${animations ? 'bg-primary' : 'bg-border'}`}
+              >
+                <div className={`w-4 h-4 rounded-full bg-white absolute top-1 transition-all ${animations ? 'left-7' : 'left-1'}`}></div>
+              </button>
+            </div>
+
+          </div>
+
         </div>
       </div>
     </div>
   );
-}
+};

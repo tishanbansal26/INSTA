@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { Bell, Search, Sun, Moon, ChevronRight } from 'lucide-react';
 import { useThemeStore } from '@/store/theme.store';
 import { useAuthStore } from '@/store/auth.store';
@@ -9,6 +10,22 @@ export function Navbar() {
   const { user, logout } = useAuthStore();
   const location = useLocation();
   const pathnames = location.pathname.split('/').filter(x => x);
+  const [showNotifications, setShowNotifications] = useState(false);
+  const [hasUnread, setHasUnread] = useState(true);
+
+  const handleMarkAllRead = () => {
+    setHasUnread(false);
+  };
+
+  const handleViewAll = () => {
+    alert("Navigating to all notifications...");
+    setShowNotifications(false);
+  };
+
+  const handleNotificationClick = (title: string) => {
+    alert(`Viewing details for: ${title}`);
+    setShowNotifications(false);
+  };
 
   return (
     <header className="h-16 border-b border-border bg-card/80 backdrop-blur flex items-center justify-between px-6 z-30">
@@ -38,10 +55,35 @@ export function Navbar() {
         <Button variant="ghost" size="icon" onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}>
           {theme === 'dark' ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
         </Button>
-        <Button variant="ghost" size="icon" className="relative">
-          <Bell className="h-5 w-5" />
-          <span className="absolute top-1.5 right-1.5 h-2 w-2 rounded-full bg-danger"></span>
-        </Button>
+        <div className="relative">
+          <Button variant="ghost" size="icon" className="relative" onClick={() => setShowNotifications(!showNotifications)}>
+            <Bell className="h-5 w-5" />
+            {hasUnread && <span className="absolute top-1.5 right-1.5 h-2 w-2 rounded-full bg-danger animate-pulse"></span>}
+          </Button>
+          {showNotifications && (
+            <div className="absolute right-0 mt-2 w-80 bg-surface border border-border rounded-xl shadow-xl overflow-hidden z-50 animate-in slide-in-from-top-2">
+              <div className="p-4 border-b border-border flex justify-between items-center">
+                <h3 className="font-bold text-text">Notifications</h3>
+                {hasUnread && <span className="text-xs text-primary font-bold cursor-pointer hover:underline" onClick={handleMarkAllRead}>Mark all as read</span>}
+              </div>
+              <div className="max-h-80 overflow-y-auto">
+                <div className="p-4 border-b border-border hover:bg-surface-hover cursor-pointer transition-colors" onClick={() => handleNotificationClick('New Quote Requested')}>
+                  <p className="text-sm font-bold text-text flex justify-between items-center">New Quote Requested {hasUnread && <span className="w-2 h-2 rounded-full bg-primary inline-block"></span>}</p>
+                  <p className="text-xs text-text-secondary mt-1">Rahul Sharma requested a quote for Optima Restore.</p>
+                  <p className="text-[10px] text-primary font-bold mt-2">Just now</p>
+                </div>
+                <div className="p-4 border-b border-border hover:bg-surface-hover cursor-pointer transition-colors" onClick={() => handleNotificationClick('Policy Renewed')}>
+                  <p className="text-sm font-bold text-text flex justify-between items-center">Policy Renewed {hasUnread && <span className="w-2 h-2 rounded-full bg-primary inline-block"></span>}</p>
+                  <p className="text-xs text-text-secondary mt-1">Priya Patel's health policy was renewed successfully.</p>
+                  <p className="text-[10px] text-text-secondary font-bold mt-2">2 hours ago</p>
+                </div>
+              </div>
+              <div className="p-3 text-center border-t border-border hover:bg-surface-hover cursor-pointer transition-colors" onClick={handleViewAll}>
+                <span className="text-sm font-bold text-primary">View all</span>
+              </div>
+            </div>
+          )}
+        </div>
         <div className="flex items-center space-x-3 border-l border-border pl-4 cursor-pointer" onClick={logout} title="Click to logout">
           <div className="text-right hidden sm:block">
             <p className="text-sm font-medium leading-none text-text">{user?.name || 'Admin User'}</p>

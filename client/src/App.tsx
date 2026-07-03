@@ -4,32 +4,37 @@ import { ProtectedRoute, GuestRoute, CustomerRoute, AgentRoute } from './routes/
 import { MainLayout } from './components/layout/MainLayout';
 import { PortalLayout } from './modules/customer-portal/layout/PortalLayout';
 import { AgentLayout } from './modules/agent-portal/layout/AgentLayout';
+import { ThemeProvider } from './components/providers/ThemeProvider';
 
 // Lazy load Pages
 const Login = lazy(() => import('./modules/auth/pages/Login').then(m => ({ default: m.Login })));
 const Dashboard = lazy(() => import('./modules/dashboard/pages/Dashboard').then(m => ({ default: m.Dashboard })));
 const ClientList = lazy(() => import('./modules/clients/pages/ClientList').then(m => ({ default: m.ClientList })));
+const ClientDetails = lazy(() => import('./modules/clients/pages/ClientDetails').then(m => ({ default: m.ClientDetails })));
 const CompanyList = lazy(() => import('./modules/companies/pages/CompanyList').then(m => ({ default: m.CompanyList })));
 const PlanList = lazy(() => import('./modules/plans/pages/PlanList').then(m => ({ default: m.PlanList })));
 const PremiumCalculator = lazy(() => import('./modules/premium/pages/PremiumCalculator').then(m => ({ default: m.PremiumCalculator })));
 const QuotationList = lazy(() => import('./modules/quotations/pages/QuotationList').then(m => ({ default: m.QuotationList })));
+const QuotationDetails = lazy(() => import('./modules/quotations/pages/QuotationDetails').then(m => ({ default: m.QuotationDetails })));
 const PolicyList = lazy(() => import('./modules/policies/pages/PolicyList').then(m => ({ default: m.PolicyList })));
+const NewPolicyWizard = lazy(() => import('./modules/policies/pages/NewPolicyWizard').then(m => ({ default: m.NewPolicyWizard })));
+const PolicyDetails = lazy(() => import('./modules/policies/pages/PolicyDetails').then(m => ({ default: m.PolicyDetails })));
 const PaymentList = lazy(() => import('./modules/payments/pages/PaymentList').then(m => ({ default: m.PaymentList })));
 const RenewalList = lazy(() => import('./modules/renewals/pages/RenewalList').then(m => ({ default: m.RenewalList })));
 const ClaimList = lazy(() => import('./modules/claims/pages/ClaimList').then(m => ({ default: m.ClaimList })));
 const ClaimDetails = lazy(() => import('./modules/claims/pages/ClaimDetails').then(m => ({ default: m.ClaimDetails })));
 const ClaimsReport = lazy(() => import('./modules/reports/pages/ClaimsReport').then(m => ({ default: m.ClaimsReport })));
 const LeadList = lazy(() => import('./modules/leads/pages/LeadList'));
-const LeadDetails = lazy(() => import('./modules/leads/pages/LeadDetails'));
-const CampaignList = lazy(() => import('./modules/campaigns/pages/CampaignList'));
-const CalendarView = lazy(() => import('./modules/calendar/pages/CalendarView'));
+const LeadDetails = lazy(() => import('./modules/leads/pages/LeadDetails').then(m => ({ default: m.LeadDetails })));
+const CampaignList = lazy(() => import('./modules/campaigns/pages/CampaignList').then(m => ({ default: m.CampaignList })));
+const CalendarView = lazy(() => import('./modules/calendar/pages/CalendarView').then(m => ({ default: m.CalendarView })));
 const TaskList = lazy(() => import('./modules/tasks/pages/TaskList'));
-const Settings = lazy(() => import('./modules/settings/pages/Settings'));
-const FinanceDashboard = lazy(() => import('./modules/finance/pages/FinanceDashboard'));
-const CommissionList = lazy(() => import('./modules/finance/pages/CommissionList'));
-const ExpenseList = lazy(() => import('./modules/finance/pages/ExpenseList'));
-const PayoutList = lazy(() => import('./modules/finance/pages/PayoutList'));
-const InvoiceList = lazy(() => import('./modules/finance/pages/InvoiceList'));
+const Settings = lazy(() => import('./modules/settings/pages/Settings').then(m => ({ default: m.Settings })));
+const FinanceDashboard = lazy(() => import('./modules/finance/pages/FinanceDashboard').then(m => ({ default: m.FinanceDashboard })));
+const CommissionList = lazy(() => import('./modules/finance/pages/CommissionList').then(m => ({ default: m.CommissionList })));
+const ExpenseList = lazy(() => import('./modules/finance/pages/ExpenseList').then(m => ({ default: m.ExpenseList })));
+const PayoutList = lazy(() => import('./modules/finance/pages/PayoutList').then(m => ({ default: m.PayoutList })));
+const InvoiceList = lazy(() => import('./modules/finance/pages/InvoiceList').then(m => ({ default: m.InvoiceList })));
 
 // Customer Portal
 const PortalDashboard = lazy(() => import('./modules/customer-portal/pages/PortalDashboard').then(m => ({ default: m.PortalDashboard })));
@@ -41,6 +46,8 @@ const MyDocuments = lazy(() => import('./modules/customer-portal/pages/MyDocumen
 const MyQuotations = lazy(() => import('./modules/customer-portal/pages/MyQuotations').then(m => ({ default: m.MyQuotations })));
 const CustomerProfile = lazy(() => import('./modules/customer-portal/pages/CustomerProfile').then(m => ({ default: m.CustomerProfile })));
 const SupportTickets = lazy(() => import('./modules/customer-portal/pages/SupportTickets').then(m => ({ default: m.SupportTickets })));
+const PortalNotifications = lazy(() => import('./modules/customer-portal/pages/PortalNotifications').then(m => ({ default: m.PortalNotifications })));
+const AIAssistant = lazy(() => import('./modules/customer-portal/pages/AIAssistant').then(m => ({ default: m.AIAssistant })));
 
 // Agent Portal
 const AgentDashboard = lazy(() => import('./modules/agent-portal/pages/AgentDashboard').then(m => ({ default: m.AgentDashboard })));
@@ -61,6 +68,7 @@ const SuspenseFallback = () => (
 
 export default function App() {
   return (
+    <ThemeProvider>
     <BrowserRouter>
       <Suspense fallback={<SuspenseFallback />}>
         <Routes>
@@ -81,11 +89,15 @@ export default function App() {
               <Route path="/tasks" element={<TaskList />} />
               {/* Insurance Routes */}
               <Route path="/clients" element={<ClientList />} />
+              <Route path="/clients/:id" element={<ClientDetails />} />
               <Route path="/companies" element={<CompanyList />} />
               <Route path="/plans" element={<PlanList />} />
               <Route path="/premium" element={<PremiumCalculator />} />
               <Route path="/quotations" element={<QuotationList />} />
+              <Route path="/quotations/:id" element={<QuotationDetails />} />
               <Route path="/policies" element={<PolicyList />} />
+              <Route path="/policies/new" element={<NewPolicyWizard />} />
+              <Route path="/policies/:id" element={<PolicyDetails />} />
               <Route path="/payments" element={<PaymentList />} />
               <Route path="/claims" element={<ClaimList />} />
               <Route path="/claims/:id" element={<ClaimDetails />} />
@@ -117,7 +129,8 @@ export default function App() {
               <Route path="/portal/quotations" element={<MyQuotations />} />
               <Route path="/portal/profile" element={<CustomerProfile />} />
               <Route path="/portal/support" element={<SupportTickets />} />
-              <Route path="/portal/ai" element={<div className="p-8 text-center text-text">AI Assistant Component Coming Soon</div>} />
+              <Route path="/portal/notifications" element={<PortalNotifications />} />
+              <Route path="/portal/ai" element={<AIAssistant />} />
             </Route>
           </Route>
 
@@ -140,5 +153,6 @@ export default function App() {
         </Routes>
       </Suspense>
     </BrowserRouter>
+    </ThemeProvider>
   );
 }

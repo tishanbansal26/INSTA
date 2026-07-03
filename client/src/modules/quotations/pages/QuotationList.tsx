@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { Plus, Search, Filter, Edit, FileText, CheckCircle, XCircle, Trash2, Mail, Download } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 
@@ -12,6 +13,7 @@ const MOCK_QUOTES = [
 export function QuotationList() {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedRows, setSelectedRows] = useState<string[]>([]);
+  const navigate = useNavigate();
 
   const toggleSelectAll = () => {
     if (selectedRows.length === MOCK_QUOTES.length) {
@@ -36,7 +38,7 @@ export function QuotationList() {
           <h1 className="text-3xl font-bold text-text">Quotations</h1>
           <p className="text-muted-foreground mt-1">Manage and convert client quotes</p>
         </div>
-        <Button>
+        <Button onClick={() => navigate('/premium')}>
           <Plus className="w-4 h-4 mr-2" />
           Create Quote
         </Button>

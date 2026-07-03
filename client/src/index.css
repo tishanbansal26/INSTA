@@ -4,30 +4,35 @@
 
 @layer base {
   :root {
-    --background: 222 47% 8%; /* #0B1120 */
-    --foreground: 210 40% 98%;
+    --background: #F8FAFC;
+    --surface: #FFFFFF;
+    --surface-hover: #F1F5F9;
+    --border: #E2E8F0;
+    --text: #0F172A;
+    --text-secondary: #64748B;
     
-    --card: 215 28% 11%; /* #111827 */
-    --card-foreground: 210 40% 98%;
+    /* Semantic Colors */
+    --primary: #2563EB;
+    --primary-hover: #1D4ED8;
+    --success: #22C55E;
+    --warning: #F59E0B;
+    --danger: #EF4444;
+  }
+
+  .dark {
+    --background: #0B1120;
+    --surface: #111827;
+    --surface-hover: #1F2937;
+    --border: #1F2937;
+    --text: #F9FAFB;
+    --text-secondary: #9CA3AF;
     
-    --border: 215 28% 26%;
-    --input: 215 28% 26%;
-    --ring: 224 82% 53%;
-    
-    --primary: 224 82% 53%; /* #2563EB */
-    --primary-foreground: 210 40% 98%;
-    
-    --secondary: 215 28% 11%;
-    --secondary-foreground: 210 40% 98%;
-    
-    --success: 142 71% 45%; /* #22C55E */
-    --success-foreground: 210 40% 98%;
-    
-    --danger: 0 84% 60%; /* #EF4444 */
-    --danger-foreground: 210 40% 98%;
-    
-    --warning: 38 92% 50%; /* #F59E0B */
-    --warning-foreground: 210 40% 98%;
+    /* Semantic Colors */
+    --primary: #3B82F6;
+    --primary-hover: #2563EB;
+    --success: #22C55E;
+    --warning: #F59E0B;
+    --danger: #EF4444;
   }
 
   body {
@@ -38,6 +43,8 @@
 
 @layer utilities {
   .glass {
-    @apply bg-card/80 backdrop-blur-md border border-white/5;
+    background-color: var(--surface);
+    backdrop-filter: blur(12px);
+    border: 1px solid var(--border);
   }
 }
