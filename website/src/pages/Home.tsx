@@ -181,7 +181,7 @@ export const Home = () => {
 
       {/* Floating WhatsApp CTA */}
       <a 
-        href="https://wa.me/1234567890" 
+        href="https://wa.me/9603610000" 
         target="_blank" 
         rel="noreferrer"
         className="fixed bottom-8 right-8 z-50 bg-[#25D366] text-white p-4 rounded-full shadow-2xl hover:scale-110 transition-transform flex items-center gap-3 pr-6"
