@@ -1,7 +1,13 @@
 {
-  "name": "insureflow-pro",
+  "name": "insureflow-pro-monorepo",
   "version": "1.0.0",
   "private": true,
+  "workspaces": [
+    "client",
+    "server",
+    "website",
+    "packages/*"
+  ],
   "scripts": {
     "build": "cd website && npm install && npm run build"
   }

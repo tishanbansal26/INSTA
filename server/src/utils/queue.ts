@@ -1,15 +1,11 @@
 import { Queue, Worker, Job } from "bullmq";
-import Redis from "ioredis";
 import { env } from "../config/env";
 import { logger } from "./logger";
-
-const connection = new Redis(env.REDIS_URL, {
-  maxRetriesPerRequest: null,
-});
+import { redisClient } from "../config/redis";
 
 // Create Queues
-export const emailQueue = new Queue("email-notifications", { connection: connection as any });
-export const renewalQueue = new Queue("policy-renewals", { connection: connection as any });
+export const emailQueue = new Queue("email-notifications", { connection: redisClient as any });
+export const renewalQueue = new Queue("policy-renewals", { connection: redisClient as any });
 
 // Generic Worker Error Handler
 const handleWorkerError = (workerName: string, err: Error) => {
@@ -25,7 +21,7 @@ export const emailWorker = new Worker(
     await new Promise((resolve) => setTimeout(resolve, 1000)); 
     logger.info(`Email Job ${job.id} completed`);
   },
-  { connection: connection as any }
+  { connection: redisClient as any }
 );
 emailWorker.on("error", (err) => handleWorkerError("emailWorker", err));
 
@@ -38,7 +34,7 @@ export const renewalWorker = new Worker(
     await new Promise((resolve) => setTimeout(resolve, 1000));
     logger.info(`Renewal Job ${job.id} completed`);
   },
-  { connection: connection as any }
+  { connection: redisClient as any }
 );
 renewalWorker.on("error", (err) => handleWorkerError("renewalWorker", err));
 

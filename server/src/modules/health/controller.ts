@@ -1,10 +1,8 @@
 import { Request, Response } from "express";
 import prisma from "../../config/prisma";
-import Redis from "ioredis";
-import { env } from "../../config/env";
+import { apiResponse } from "../../shared/responses/apiResponse";
+import { redisClient } from "../../config/redis";
 import os from "os";
-
-const redisClient = new Redis(env.REDIS_URL, { enableOfflineQueue: false });
 
 export class HealthController {
   

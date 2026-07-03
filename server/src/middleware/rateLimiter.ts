@@ -1,16 +1,7 @@
 import rateLimit from "express-rate-limit";
 import RedisStore from "rate-limit-redis";
-import Redis from "ioredis";
 import { env } from "../config/env";
-
-// Create a redis client specifically for rate limiting
-const redisClient = new Redis(env.REDIS_URL, {
-  enableOfflineQueue: false, // Fast fail if Redis is down
-});
-
-redisClient.on("error", (err) => {
-  console.warn("Redis connection error for rate limiter:", err.message);
-});
+import { redisClient } from "../config/redis";
 
 const store = env.NODE_ENV === "production"
   ? new RedisStore({
