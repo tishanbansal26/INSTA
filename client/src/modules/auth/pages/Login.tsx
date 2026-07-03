@@ -11,6 +11,7 @@ export function Login() {
   const [email, setEmail] = useState('admin@insureflow.com');
   const [password, setPassword] = useState('admin123');
   const [showPassword, setShowPassword] = useState(false);
+  const [errorMessage, setErrorMessage] = useState('');
   
   const loginMutation = useLoginMutation();
 
@@ -20,12 +21,13 @@ export function Login() {
       { email, password },
       {
         onSuccess: (data) => {
+          setErrorMessage('');
           setAuth(data.user, data.token);
           toast.success('Logged in successfully!');
         },
         onError: (error: any) => {
           console.error("Login failed:", error);
-          toast.error(error.response?.data?.message || 'Login failed. Please check your credentials or backend connection.');
+          setErrorMessage(error.response?.data?.message || 'Login failed. Please check your credentials.');
         }
       }
     );
@@ -38,6 +40,13 @@ export function Login() {
           <h1 className="text-3xl font-bold text-primary mb-2">InsureFlow Pro</h1>
           <p className="text-muted-foreground">Sign in to your account</p>
         </div>
+        
+        {errorMessage && (
+          <div className="mb-6 p-3 rounded-md bg-red-500/10 border border-red-500/20 text-red-500 text-sm text-center font-medium">
+            {errorMessage}
+          </div>
+        )}
+
         <form onSubmit={handleLogin} className="space-y-4">
           <div className="space-y-2">
             <label className="text-sm font-medium text-text">Email Address</label>
