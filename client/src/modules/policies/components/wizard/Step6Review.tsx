@@ -1,5 +1,5 @@
 import { ShieldCheck, User, Building2, Calculator, Landmark } from 'lucide-react';
-import { WizardData } from '../pages/NewPolicyWizard';
+import { WizardData } from '../../pages/NewPolicyWizard';
 
 interface Props {
   data: WizardData;

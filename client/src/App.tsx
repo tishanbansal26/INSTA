@@ -30,7 +30,7 @@ const CampaignList = lazy(() => import('./modules/campaigns/pages/CampaignList')
 const CalendarView = lazy(() => import('./modules/calendar/pages/CalendarView').then(m => ({ default: m.CalendarView })));
 const TaskList = lazy(() => import('./modules/tasks/pages/TaskList'));
 const Settings = lazy(() => import('./modules/settings/pages/Settings').then(m => ({ default: m.Settings })));
-const FinanceDashboard = lazy(() => import('./modules/finance/pages/FinanceDashboard').then(m => ({ default: m.FinanceDashboard })));
+const FinanceDashboard = lazy(() => import('./modules/finance/pages/FinanceDashboard'));
 const CommissionList = lazy(() => import('./modules/finance/pages/CommissionList').then(m => ({ default: m.CommissionList })));
 const ExpenseList = lazy(() => import('./modules/finance/pages/ExpenseList').then(m => ({ default: m.ExpenseList })));
 const PayoutList = lazy(() => import('./modules/finance/pages/PayoutList').then(m => ({ default: m.PayoutList })));
