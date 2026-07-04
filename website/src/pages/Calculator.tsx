@@ -372,7 +372,9 @@ export const Calculator = () => {
                   <h4 className="font-bold text-text text-lg">Need Expert Advice?</h4>
                   <p className="text-sm text-text-secondary mt-1 mb-3">An advisor has been assigned to you. They will contact you shortly to help you navigate these options.</p>
                   <p className="font-bold text-blue-500">Call 1800-INSURE now</p>
-                </div>
+                <button onClick={() => alert('Quotes have been sent to your email!')} className="mt-4 px-6 py-3 bg-surface border-2 border-primary text-primary font-bold rounded-xl hover:bg-primary/10 transition-all w-full md:w-auto">
+                  Email Me These Quotes
+                </button>
               </div>
             </div>
           </div>

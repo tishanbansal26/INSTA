@@ -37,9 +37,9 @@ export const Home = () => {
           </nav>
           
           <div className="flex items-center gap-4">
-            <button className="hidden md:block font-medium text-text hover:text-primary transition-colors">
+            <a href="tel:18001234567" className="hidden md:block font-medium text-text hover:text-primary transition-colors">
               Talk to Advisor
-            </button>
+            </a>
             <a 
               href={import.meta.env.VITE_ERP_URL || 'https://insureflow-erp.vercel.app/login'} 
               className="px-6 py-2.5 bg-primary text-white font-bold rounded-lg hover:bg-primary-hover transition-colors shadow-lg shadow-primary/20"
@@ -72,9 +72,9 @@ export const Home = () => {
               <Link to="/calculate" className="px-8 py-4 bg-primary text-white font-bold rounded-xl hover:bg-primary-hover transition-colors shadow-xl shadow-primary/30 flex items-center gap-2">
                 Calculate Premium <ChevronRight className="w-5 h-5" />
               </Link>
-              <button className="px-8 py-4 bg-surface border border-border text-text font-bold rounded-xl hover:border-primary transition-colors flex items-center gap-2">
+              <a href="tel:18001234567" className="px-8 py-4 bg-surface border border-border text-text font-bold rounded-xl hover:border-primary transition-colors flex items-center gap-2">
                 Talk to Advisor
-              </button>
+              </a>
             </div>
             
             <div className="mt-10 flex items-center gap-6 text-sm font-medium text-text-secondary">
@@ -116,7 +116,7 @@ export const Home = () => {
                   <label className="block text-sm font-medium text-text mb-1">City</label>
                   <input type="text" placeholder="e.g. Mumbai" className="w-full px-4 py-3 bg-background border border-border rounded-xl text-text focus:outline-none focus:border-primary" />
                 </div>
-                <Link to="/calculate" className="w-full py-4 bg-primary text-white font-bold rounded-xl shadow-lg shadow-primary/20 mt-2 hover:bg-primary-hover transition-colors block text-center">
+                <Link to="/calculate" onClick={() => window.scrollTo(0, 0)} className="w-full py-4 bg-primary text-white font-bold rounded-xl shadow-lg shadow-primary/20 mt-2 hover:bg-primary-hover transition-colors block text-center">
                   View Instant Quotes
                 </Link>
                 <p className="text-[10px] text-text-secondary text-center mt-2">By continuing, you agree to our terms and privacy policy.</p>
