@@ -37,7 +37,7 @@ export const Home = () => {
           </nav>
           
           <div className="flex items-center gap-4">
-            <a href="tel:18001234567" className="hidden md:block font-medium text-text hover:text-primary transition-colors">
+            <a href="https://wa.me/9603610000" target="_blank" rel="noreferrer" className="hidden md:block font-medium text-text hover:text-primary transition-colors">
               Talk to Advisor
             </a>
             <a 
@@ -72,7 +72,7 @@ export const Home = () => {
               <Link to="/calculate" className="px-8 py-4 bg-primary text-white font-bold rounded-xl hover:bg-primary-hover transition-colors shadow-xl shadow-primary/30 flex items-center gap-2">
                 Calculate Premium <ChevronRight className="w-5 h-5" />
               </Link>
-              <a href="tel:18001234567" className="px-8 py-4 bg-surface border border-border text-text font-bold rounded-xl hover:border-primary transition-colors flex items-center gap-2">
+              <a href="https://wa.me/9603610000" target="_blank" rel="noreferrer" className="px-8 py-4 bg-surface border border-border text-text font-bold rounded-xl hover:border-primary transition-colors flex items-center gap-2">
                 Talk to Advisor
               </a>
             </div>
