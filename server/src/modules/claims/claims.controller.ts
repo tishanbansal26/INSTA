@@ -32,7 +32,7 @@ export const claimsController = {
 
   getById: async (req: Request, res: Response, next: NextFunction) => {
     try {
-      const { id } = req.params;
+      const id = req.params.id as string;
       const claim = await prisma.claim.findUnique({
         where: { id },
         include: {
@@ -41,7 +41,7 @@ export const claimsController = {
         }
       });
       if (!claim) {
-        return res.status(404).json(apiResponse(false, "Claim not found"));
+        return res.status(404).json(apiResponse(false, "Claim not found", null, 404));
       }
       res.status(200).json(apiResponse(true, "Claim fetched", claim));
     } catch (error) { next(error); }
@@ -61,7 +61,7 @@ export const claimsController = {
 
   update: async (req: Request, res: Response, next: NextFunction) => {
     try {
-      const { id } = req.params;
+      const id = req.params.id as string;
       const claim = await prisma.claim.update({
         where: { id },
         data: req.body

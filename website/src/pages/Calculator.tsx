@@ -380,6 +380,7 @@ export const Calculator = () => {
           </div>
         </div>
       </div>
+      </div>
     );
   }
 

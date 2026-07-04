@@ -29,7 +29,7 @@ export const AgentDashboard = () => {
     );
   }
 
-  const { metrics } = dashboardData || { metrics: {} };
+  const metrics = (dashboardData as any)?.metrics || dashboardData || {};
 
   return (
     <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500 pb-20">
@@ -168,8 +168,8 @@ export const AgentDashboard = () => {
                 <Link to="/agent/leads" className="text-xs font-bold text-primary hover:underline">View All</Link>
               </div>
               <div className="space-y-4">
-                {leadsData?.items?.length > 0 ? (
-                  leadsData.items.map((l: any, i: number) => (
+                {(leadsData?.items?.length ?? 0) > 0 ? (
+                  leadsData?.items?.map((l: any, i: number) => (
                     <div key={i} className="flex justify-between items-center border-b border-border last:border-0 pb-3 last:pb-0">
                       <div>
                         <p className="text-sm font-bold text-text">{l.name}</p>

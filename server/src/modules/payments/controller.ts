@@ -130,8 +130,7 @@ export const paymentController = {
         // Payment is successful
         const updatedPayment = await paymentService.update(paymentId, {
           paymentStatus: "SUCCESS",
-          transactionId: razorpay_payment_id,
-          paymentDate: new Date()
+          transactionId: razorpay_payment_id
         }, req.user.id);
         
         // Trigger notification event

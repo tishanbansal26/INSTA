@@ -35,11 +35,11 @@ apiClient.interceptors.response.use(
       try {
         // Assume you have a refresh token mechanism or you just log the user out
         // For now, we clear auth to force a re-login
-        useAuthStore.getState().clearAuth();
+        useAuthStore.getState().logout();
         window.location.href = '/login';
         return Promise.reject(error);
       } catch (refreshError) {
-        useAuthStore.getState().clearAuth();
+        useAuthStore.getState().logout();
         window.location.href = '/login';
         return Promise.reject(refreshError);
       }

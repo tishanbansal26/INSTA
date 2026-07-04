@@ -40,7 +40,7 @@ export const leadsController = {
 
   update: async (req: Request, res: Response, next: NextFunction) => {
     try {
-      const { id } = req.params;
+      const id = req.params.id as string;
       const lead = await prisma.lead.update({
         where: { id },
         data: req.body
@@ -51,7 +51,7 @@ export const leadsController = {
 
   delete: async (req: Request, res: Response, next: NextFunction) => {
     try {
-      const { id } = req.params;
+      const id = req.params.id as string;
       await prisma.lead.delete({ where: { id } });
       res.status(200).json(apiResponse(true, "Lead deleted", null));
     } catch (error) { next(error); }

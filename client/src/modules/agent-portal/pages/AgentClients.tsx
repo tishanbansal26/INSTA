@@ -42,6 +42,33 @@ export const AgentClients = () => {
       </div>
 
       {/* Client List */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {isLoading ? (
+          <SkeletonLoader text="Loading clients..." />
+        ) : isError ? (
+          <ErrorState title="Failed to load clients" onRetry={refetch} />
+        ) : clients.length === 0 ? (
+          <div className="col-span-full text-center p-8 text-text-secondary">No clients found.</div>
+        ) : clients.map((client: any) => (
+          <div key={client.id} className="bg-surface border border-border rounded-xl p-5 hover:border-primary/50 hover:shadow-lg transition-all cursor-pointer" onClick={() => setSelectedClient(client)}>
+            <div className="flex justify-between items-start mb-4">
+              <div className="flex items-center gap-3">
+                <div className="w-12 h-12 rounded-full bg-blue-500/10 text-blue-500 flex items-center justify-center font-bold text-lg">
+                  {client.firstName?.charAt(0) || client.name?.charAt(0) || 'C'}
+                </div>
+                <div>
+                  <h3 className="font-bold text-text">{client.firstName} {client.lastName}</h3>
+                  <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${client.status === 'ACTIVE' ? 'bg-green-500/10 text-green-500' : 'bg-text-secondary/10 text-text-secondary'}`}>
+                    {client.status || 'Active'} Customer
+                  </span>
+                </div>
+              </div>
+              <button className="text-text-secondary hover:text-text" onClick={(e) => e.stopPropagation()}><MoreVertical className="w-4 h-4" /></button>
+            </div>
+            
+            <div className="space-y-2 mb-4 text-sm text-text-secondary">
+              <p className="flex items-center gap-2"><Phone className="w-4 h-4" /> {client.phone}</p>
+              <p className="flex items-center gap-2"><Mail className="w-4 h-4" /> {client.email}</p>
             </div>
 
             <div className="flex justify-between items-center pt-4 border-t border-border">

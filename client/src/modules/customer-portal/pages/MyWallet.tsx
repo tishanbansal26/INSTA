@@ -20,7 +20,7 @@ declare global {
 export const MyWallet = () => {
   const [activeTab, setActiveTab] = useState('transactions');
   const { data: paymentsData, isLoading, isError, refetch } = usePayments({ limit: 20 });
-  const { data: pendingPayments } = usePayments({ paymentStatus: 'PENDING', limit: 1 });
+  const { data: pendingPayments } = usePayments({ paymentStatus: 'PENDING', limit: 1 } as any);
   const { createOrder, verifyPayment, isCreatingOrder, isVerifying } = usePaymentMutations();
 
   const nextDue = pendingPayments?.items?.[0];

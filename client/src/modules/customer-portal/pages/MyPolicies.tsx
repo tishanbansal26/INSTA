@@ -15,46 +15,6 @@ import { SkeletonLoader } from '@/components/shared/SkeletonLoader';
 import { ErrorState } from '@/components/shared/ErrorState';
 import { EmptyState } from '@/components/shared/EmptyState';
 import { format } from 'date-fns';
-  {
-    id: 'POL-9928134',
-    name: 'Comprehensive Health Plan',
-    provider: 'HDFC ERGO',
-    status: 'ACTIVE',
-    premium: '₹15,000',
-    frequency: 'Annually',
-    renewalDate: '12 Nov 2026',
-    sumInsured: '₹10,00,000',
-    type: 'Family Floater',
-    members: ['Self', 'Spouse', 'Child'],
-    benefits: ['No Room Rent Capping', 'Maternity Cover (₹50k)', 'Free Annual Checkup']
-  },
-  {
-    id: 'POL-882112',
-    name: 'Personal Accident Cover',
-    provider: 'ICICI Lombard',
-    status: 'ACTIVE',
-    premium: '₹4,500',
-    frequency: 'Annually',
-    renewalDate: '01 Jan 2027',
-    sumInsured: '₹50,00,000',
-    type: 'Individual',
-    members: ['Self'],
-    benefits: ['Accidental Death Cover', 'Permanent Disability', 'Children Education Bonus']
-  },
-  {
-    id: 'POL-771120',
-    name: 'Term Life Insurance',
-    provider: 'Max Life',
-    status: 'EXPIRED',
-    premium: '₹18,200',
-    frequency: 'Annually',
-    renewalDate: '15 Aug 2026',
-    sumInsured: '₹1,00,00,000',
-    type: 'Individual',
-    members: ['Self'],
-    benefits: ['Critical Illness Rider', 'Return of Premium']
-  }
-];
 
 export const MyPolicies = () => {
   const { data, isLoading, isError, refetch } = usePolicies({ limit: 50 });

@@ -6,7 +6,10 @@ import {
   MessageCircle, 
   Mail, 
   FileText,
-import { CalendarClock, Search, Filter, Phone, Mail, FileText, Send } from 'lucide-react';
+  CalendarClock,
+  Send,
+  Phone
+} from 'lucide-react';
 import { useRenewals } from '@/hooks/useRenewals';
 import { SkeletonLoader } from '@/components/shared/SkeletonLoader';
 import { ErrorState } from '@/components/shared/ErrorState';

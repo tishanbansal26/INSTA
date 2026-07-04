@@ -3,7 +3,7 @@ import {
   FileText, Plus, CheckCircle2, Clock, Upload,
   ArrowRight, Shield, Activity, AlertCircle, Loader2
 } from 'lucide-react';
-import { useClaims, useClaimMutations } from '@/hooks/useClaims';
+import { useClaims, useClaimMutation } from '@/hooks/useClaims';
 import { usePolicies } from '@/hooks/usePolicies';
 import { SkeletonLoader } from '@/components/shared/SkeletonLoader';
 import { ErrorState } from '@/components/shared/ErrorState';
@@ -16,8 +16,8 @@ export const MyClaims = () => {
   const [selectedPolicyId, setSelectedPolicyId] = useState('');
   
   const { data: claimsData, isLoading, isError, refetch } = useClaims({ limit: 10 });
-  const { data: policiesData } = usePolicies({ status: 'ACTIVE' });
-  const { createClaim, isCreating } = useClaimMutations();
+  const { data: policiesData } = usePolicies({ status: 'ACTIVE' } as any);
+  const { createClaim, isCreating } = useClaimMutation();
 
   const activeClaim = claimsData?.items?.find((c: any) => !['SETTLED', 'REJECTED'].includes(c.status));
   const pastClaims = claimsData?.items?.filter((c: any) => ['SETTLED', 'REJECTED'].includes(c.status)) || [];

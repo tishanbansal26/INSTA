@@ -72,6 +72,8 @@ export const AgentClaims = () => {
                   </button>
                 </td>
               </tr>
+            ))
+          )}
           </tbody>
         </table>
       </div>

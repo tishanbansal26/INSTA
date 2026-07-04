@@ -134,6 +134,7 @@ export function PolicyList() {
             </div>
           </div>
         )}
+      </div>
     </div>
   );
 }
