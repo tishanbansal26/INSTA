@@ -124,7 +124,7 @@ export const AIAdvisor = () => {
                     <span className="flex items-center gap-2"><HelpCircle className="w-4 h-4 text-orange-500" /> Claim Help</span>
                     <ChevronRight className="w-4 h-4 text-text-secondary" />
                   </button>
-                  <a href={import.meta.env.VITE_ERP_URL || 'https://insureflow-erp.vercel.app/portal'} className="flex items-center justify-between p-3 bg-surface border border-border rounded-xl text-sm font-medium hover:border-primary text-left">
+                  <a href="https://insureflow-erp.vercel.app/portal" className="flex items-center justify-between p-3 bg-surface border border-border rounded-xl text-sm font-medium hover:border-primary text-left">
                     <span className="flex items-center gap-2"><User className="w-4 h-4 text-green-500" /> Existing Customer</span>
                     <ChevronRight className="w-4 h-4 text-text-secondary" />
                   </a>

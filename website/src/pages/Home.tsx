@@ -16,6 +16,13 @@ import {
 import { Link } from 'react-router-dom';
 
 export const Home = () => {
+  const [formState, setFormState] = React.useState({
+    type: 'Health Insurance',
+    age: '',
+    gender: 'Male',
+    city: ''
+  });
+
   return (
     <div className="min-h-screen bg-background">
       
@@ -37,11 +44,11 @@ export const Home = () => {
           </nav>
           
           <div className="flex items-center gap-4">
-            <a href="https://wa.me/9603610000" target="_blank" rel="noreferrer" className="hidden md:block font-medium text-text hover:text-primary transition-colors">
+            <a href="tel:1800INSURE" className="hidden md:block font-medium text-text hover:text-primary transition-colors">
               Talk to Advisor
             </a>
             <a 
-              href={import.meta.env.VITE_ERP_URL || 'https://insureflow-erp.vercel.app/login'} 
+              href="https://insureflow-erp.vercel.app/login" 
               className="px-6 py-2.5 bg-primary text-white font-bold rounded-lg hover:bg-primary-hover transition-colors shadow-lg shadow-primary/20"
             >
               Customer Portal
@@ -72,7 +79,7 @@ export const Home = () => {
               <Link to="/calculate" className="px-8 py-4 bg-primary text-white font-bold rounded-xl hover:bg-primary-hover transition-colors shadow-xl shadow-primary/30 flex items-center gap-2">
                 Calculate Premium <ChevronRight className="w-5 h-5" />
               </Link>
-              <a href="https://wa.me/9603610000" target="_blank" rel="noreferrer" className="px-8 py-4 bg-surface border border-border text-text font-bold rounded-xl hover:border-primary transition-colors flex items-center gap-2">
+              <a href="tel:1800INSURE" className="px-8 py-4 bg-surface border border-border text-text font-bold rounded-xl hover:border-primary transition-colors flex items-center gap-2">
                 Talk to Advisor
               </a>
             </div>
@@ -92,31 +99,31 @@ export const Home = () => {
               
               <div className="space-y-4">
                 <div>
-                  <label className="block text-sm font-medium text-text mb-1">Insurance Type</label>
-                  <select className="w-full px-4 py-3 bg-background border border-border rounded-xl text-text focus:outline-none focus:border-primary">
-                    <option>Health Insurance</option>
-                    <option>Term Life Insurance</option>
-                    <option>Car Insurance</option>
+                  <label htmlFor="ins-type" className="block text-sm font-medium text-text mb-1">Insurance Type</label>
+                  <select id="ins-type" aria-label="Insurance Type" value={formState.type} onChange={e => setFormState({...formState, type: e.target.value})} className="w-full px-4 py-3 bg-background border border-border rounded-xl text-text focus:outline-none focus:border-primary">
+                    <option value="Health Insurance">Health Insurance</option>
+                    <option value="Term Life Insurance">Term Life Insurance</option>
+                    <option value="Car Insurance">Car Insurance</option>
                   </select>
                 </div>
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-sm font-medium text-text mb-1">Age</label>
-                    <input type="number" placeholder="25" className="w-full px-4 py-3 bg-background border border-border rounded-xl text-text focus:outline-none focus:border-primary" />
+                    <label htmlFor="ins-age" className="block text-sm font-medium text-text mb-1">Age</label>
+                    <input id="ins-age" aria-label="Age" type="number" value={formState.age} onChange={e => setFormState({...formState, age: e.target.value})} placeholder="25" className="w-full px-4 py-3 bg-background border border-border rounded-xl text-text focus:outline-none focus:border-primary" />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-text mb-1">Gender</label>
-                    <select className="w-full px-4 py-3 bg-background border border-border rounded-xl text-text focus:outline-none focus:border-primary">
-                      <option>Male</option>
-                      <option>Female</option>
+                    <label htmlFor="ins-gender" className="block text-sm font-medium text-text mb-1">Gender</label>
+                    <select id="ins-gender" aria-label="Gender" value={formState.gender} onChange={e => setFormState({...formState, gender: e.target.value})} className="w-full px-4 py-3 bg-background border border-border rounded-xl text-text focus:outline-none focus:border-primary">
+                      <option value="Male">Male</option>
+                      <option value="Female">Female</option>
                     </select>
                   </div>
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-text mb-1">City</label>
-                  <input type="text" placeholder="e.g. Mumbai" className="w-full px-4 py-3 bg-background border border-border rounded-xl text-text focus:outline-none focus:border-primary" />
+                  <label htmlFor="ins-city" className="block text-sm font-medium text-text mb-1">City</label>
+                  <input id="ins-city" aria-label="City" type="text" value={formState.city} onChange={e => setFormState({...formState, city: e.target.value})} placeholder="e.g. Mumbai" className="w-full px-4 py-3 bg-background border border-border rounded-xl text-text focus:outline-none focus:border-primary" />
                 </div>
-                <Link to="/calculate" onClick={() => window.scrollTo(0, 0)} className="w-full py-4 bg-primary text-white font-bold rounded-xl shadow-lg shadow-primary/20 mt-2 hover:bg-primary-hover transition-colors block text-center">
+                <Link to={`/calculate?type=${encodeURIComponent(formState.type)}&age=${encodeURIComponent(formState.age)}&gender=${encodeURIComponent(formState.gender)}&city=${encodeURIComponent(formState.city)}`} onClick={() => window.scrollTo(0, 0)} className="w-full py-4 bg-primary text-white font-bold rounded-xl shadow-lg shadow-primary/20 mt-2 hover:bg-primary-hover transition-colors block text-center">
                   View Instant Quotes
                 </Link>
                 <p className="text-[10px] text-text-secondary text-center mt-2">By continuing, you agree to our terms and privacy policy.</p>
@@ -179,15 +186,13 @@ export const Home = () => {
         </div>
       </section>
 
-      {/* Floating WhatsApp CTA */}
+      {/* Floating Call CTA */}
       <a 
-        href="https://wa.me/9603610000" 
-        target="_blank" 
-        rel="noreferrer"
+        href="tel:1800INSURE" 
         className="fixed bottom-8 right-8 z-50 bg-[#25D366] text-white p-4 rounded-full shadow-2xl hover:scale-110 transition-transform flex items-center gap-3 pr-6"
       >
         <MessageCircle className="w-8 h-8" />
-        <span className="font-bold hidden md:block">Chat with Advisor</span>
+        <span className="font-bold hidden md:block">Call Advisor</span>
       </a>
 
     </div>

@@ -200,9 +200,14 @@ const StepContact = ({ data, onChange, onSubmit, onBack, isLoading }: any) => (
 // --- Main Calculator Page ---
 
 export const Calculator = () => {
-  const [step, setStep] = useState(1);
+  const searchParams = new URLSearchParams(window.location.search);
+  const typeParam = searchParams.get('type') || '';
+  const initialType = typeParam.includes('Life') ? 'Life' : typeParam.includes('Car') ? 'Car' : typeParam.includes('Health') ? 'Health' : '';
+  const initialStep = initialType ? 2 : 1;
+
+  const [step, setStep] = useState(initialStep);
   const [formData, setFormData] = useState({
-    insuranceType: '', // 'Health' or 'Life'
+    insuranceType: initialType, // 'Health' or 'Life'
     
     // Shared
     name: '',
@@ -212,13 +217,13 @@ export const Calculator = () => {
     
     // Health Specific (Niva Bupa aligned)
     familyMembers: ['Self'],
-    age: '',
-    city: '',
+    age: searchParams.get('age') || '',
+    city: searchParams.get('city') || '',
     preExisting: false,
     
     // Life Specific (Tata AIA aligned)
     dob: '',
-    gender: 'Male',
+    gender: searchParams.get('gender') || 'Male',
     smoker: false,
     income: '500000',
     occupation: 'Salaried',
