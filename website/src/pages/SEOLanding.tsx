@@ -20,6 +20,24 @@ const SEO_CONTENT: Record<string, any> = {
       { q: 'What happens if I survive the term?', a: 'Standard term plans do not pay out on survival, but Return of Premium (ROP) plans return your entire premium amount.' },
       { q: 'Can I add riders?', a: 'Yes, you can add accidental death, critical illness, and waiver of premium riders.' }
     ]
+  },
+  'life-insurance': {
+    title: 'Comprehensive Life Insurance Plans',
+    heroDesc: 'Protect your loved ones with our comprehensive life insurance policies. Build a corpus for the future while securing their present.',
+    benefits: ['Guaranteed Returns', 'Tax Benefits under 80C & 10(10D)', 'Loan Facility Available', 'Flexible Premium Payment Options'],
+    faqs: [
+      { q: 'Is life insurance different from term insurance?', a: 'Yes, life insurance often includes an investment component, offering a maturity benefit, unlike pure term insurance.' },
+      { q: 'Can I withdraw money before maturity?', a: 'Depending on the policy, partial withdrawals or loans against the policy may be allowed after a lock-in period.' }
+    ]
+  },
+  'car-insurance': {
+    title: 'Top Car Insurance Plans in India',
+    heroDesc: 'Protect your car against accidents, theft, and natural disasters. Get instant policy issuance and cashless repairs at 5000+ garages.',
+    benefits: ['Comprehensive Coverage', 'Zero Depreciation Cover', '24x7 Roadside Assistance', 'No Claim Bonus (NCB) Protection'],
+    faqs: [
+      { q: 'What is a Zero Depreciation cover?', a: 'It ensures you get the full claim amount without any deduction for depreciation on car parts.' },
+      { q: 'Is third-party insurance mandatory?', a: 'Yes, as per the Motor Vehicles Act, third-party insurance is mandatory for all vehicles in India.' }
+    ]
   }
 };
 

@@ -23,7 +23,7 @@ export const dashboardApi = {
     return response.data.data;
   },
   getRecentActivities: async (): Promise<Activity[]> => {
-    const response = await apiClient.get('/dashboard/activities');
+    const response = await apiClient.get('/dashboard/recent-activities');
     return response.data.data;
   }
 };

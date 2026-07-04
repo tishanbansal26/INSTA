@@ -1,24 +1,36 @@
 import { 
-  Users, 
-  Flame, 
-  ShieldCheck, 
-  IndianRupee, 
-  Wallet, 
-  Clock, 
-  AlertTriangle,
-  Target,
-  Plus,
-  Phone,
-  MessageCircle,
-  Calendar,
-  Sparkles,
-  ArrowRight,
-  TrendingUp,
-  FileText
+  Users, Flame, ShieldCheck, IndianRupee, Wallet, Clock, 
+  AlertTriangle, Target, Plus, Phone, MessageCircle, 
+  Calendar, Sparkles, ArrowRight, TrendingUp, FileText 
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import { useDashboardOverview } from '@/hooks/useDashboard';
+import { useLeads } from '@/hooks/useLeads';
+import { SkeletonLoader } from '@/components/shared/SkeletonLoader';
+import { ErrorState } from '@/components/shared/ErrorState';
 
 export const AgentDashboard = () => {
+  const { data: dashboardData, isLoading, isError, refetch } = useDashboardOverview();
+  const { data: leadsData } = useLeads({ limit: 5 });
+
+  if (isLoading) {
+    return (
+      <div className="p-6">
+        <SkeletonLoader text="Loading dashboard metrics..." />
+      </div>
+    );
+  }
+
+  if (isError) {
+    return (
+      <div className="p-6">
+        <ErrorState title="Failed to load dashboard metrics" onRetry={refetch} />
+      </div>
+    );
+  }
+
+  const { metrics } = dashboardData || { metrics: {} };
+
   return (
     <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500 pb-20">
       
@@ -51,10 +63,9 @@ export const AgentDashboard = () => {
             <div className="w-10 h-10 rounded-lg bg-blue-500/10 text-blue-500 flex items-center justify-center">
               <Users className="w-5 h-5" />
             </div>
-            <span className="text-xs font-bold text-green-500">+12%</span>
           </div>
-          <p className="text-sm font-medium text-text-secondary">Leads Assigned</p>
-          <h3 className="text-2xl font-black text-text mt-1">142</h3>
+          <p className="text-sm font-medium text-text-secondary">Total Clients</p>
+          <h3 className="text-2xl font-black text-text mt-1">{metrics.totalClients || 0}</h3>
         </div>
 
         <div className="bg-surface border border-border rounded-xl p-5 hover:border-primary/50 transition-colors">
@@ -63,8 +74,8 @@ export const AgentDashboard = () => {
               <Flame className="w-5 h-5" />
             </div>
           </div>
-          <p className="text-sm font-medium text-text-secondary">Hot Leads</p>
-          <h3 className="text-2xl font-black text-text mt-1">18</h3>
+          <p className="text-sm font-medium text-text-secondary">Active Policies</p>
+          <h3 className="text-2xl font-black text-text mt-1">{metrics.activePolicies || 0}</h3>
         </div>
 
         <div className="bg-surface border border-border rounded-xl p-5 hover:border-primary/50 transition-colors">
@@ -72,10 +83,9 @@ export const AgentDashboard = () => {
             <div className="w-10 h-10 rounded-lg bg-green-500/10 text-green-500 flex items-center justify-center">
               <ShieldCheck className="w-5 h-5" />
             </div>
-            <span className="text-xs font-bold text-green-500">+5%</span>
           </div>
-          <p className="text-sm font-medium text-text-secondary">Policies Sold (MTD)</p>
-          <h3 className="text-2xl font-black text-text mt-1">24</h3>
+          <p className="text-sm font-medium text-text-secondary">Monthly Premium</p>
+          <h3 className="text-2xl font-black text-text mt-1">₹{metrics.monthlyPremium || 0}</h3>
         </div>
 
         <div className="bg-surface border border-border rounded-xl p-5 hover:border-primary/50 transition-colors">
@@ -83,10 +93,9 @@ export const AgentDashboard = () => {
             <div className="w-10 h-10 rounded-lg bg-purple-500/10 text-purple-500 flex items-center justify-center">
               <Wallet className="w-5 h-5" />
             </div>
-            <span className="text-xs font-bold text-text-secondary">₹50k Goal</span>
           </div>
-          <p className="text-sm font-medium text-text-secondary">Commission Earned</p>
-          <h3 className="text-2xl font-black text-text mt-1">₹32,450</h3>
+          <p className="text-sm font-medium text-text-secondary">Pending Claims</p>
+          <h3 className="text-2xl font-black text-text mt-1">{metrics.pendingClaims || 0}</h3>
         </div>
       </div>
 
@@ -159,21 +168,21 @@ export const AgentDashboard = () => {
                 <Link to="/agent/leads" className="text-xs font-bold text-primary hover:underline">View All</Link>
               </div>
               <div className="space-y-4">
-                {[
-                  { name: 'Ravi Desai', city: 'Mumbai', source: 'Premium Calculator' },
-                  { name: 'Pooja Mehta', city: 'Delhi', source: 'Contact Form' },
-                  { name: 'Anil Kapoor', city: 'Pune', source: 'WhatsApp Lead' }
-                ].map((l, i) => (
-                  <div key={i} className="flex justify-between items-center border-b border-border last:border-0 pb-3 last:pb-0">
-                    <div>
-                      <p className="text-sm font-bold text-text">{l.name}</p>
-                      <p className="text-xs text-text-secondary">{l.city} • {l.source}</p>
+                {leadsData?.items?.length > 0 ? (
+                  leadsData.items.map((l: any, i: number) => (
+                    <div key={i} className="flex justify-between items-center border-b border-border last:border-0 pb-3 last:pb-0">
+                      <div>
+                        <p className="text-sm font-bold text-text">{l.name}</p>
+                        <p className="text-xs text-text-secondary">{l.mobile} • {l.source}</p>
+                      </div>
+                      <button className="text-xs font-bold bg-primary text-white px-3 py-1 rounded-full hover:bg-primary-hover">
+                        Contact
+                      </button>
                     </div>
-                    <button className="text-xs font-bold bg-primary text-white px-3 py-1 rounded-full hover:bg-primary-hover">
-                      Claim
-                    </button>
-                  </div>
-                ))}
+                  ))
+                ) : (
+                  <p className="text-sm text-text-secondary">No new leads available.</p>
+                )}
               </div>
             </div>
           </div>

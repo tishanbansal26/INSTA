@@ -1,19 +1,26 @@
 import { useState } from 'react';
 import { 
-  FileText, 
-  Plus, 
-  CheckCircle2, 
-  Clock, 
-  Upload,
-  ArrowRight,
-  Shield,
-  Activity,
-  AlertCircle
+  FileText, Plus, CheckCircle2, Clock, Upload,
+  ArrowRight, Shield, Activity, AlertCircle, Loader2
 } from 'lucide-react';
+import { useClaims, useClaimMutations } from '@/hooks/useClaims';
+import { usePolicies } from '@/hooks/usePolicies';
+import { SkeletonLoader } from '@/components/shared/SkeletonLoader';
+import { ErrorState } from '@/components/shared/ErrorState';
+import { EmptyState } from '@/components/shared/EmptyState';
+import { format } from 'date-fns';
 
 export const MyClaims = () => {
   const [isRaisingClaim, setIsRaisingClaim] = useState(false);
-  const [step, setStep] = useState(1); // 1: Policy, 2: Hospital, 3: Bills, 4: Review
+  const [step, setStep] = useState(1); 
+  const [selectedPolicyId, setSelectedPolicyId] = useState('');
+  
+  const { data: claimsData, isLoading, isError, refetch } = useClaims({ limit: 10 });
+  const { data: policiesData } = usePolicies({ status: 'ACTIVE' });
+  const { createClaim, isCreating } = useClaimMutations();
+
+  const activeClaim = claimsData?.items?.find((c: any) => !['SETTLED', 'REJECTED'].includes(c.status));
+  const pastClaims = claimsData?.items?.filter((c: any) => ['SETTLED', 'REJECTED'].includes(c.status)) || [];
 
   if (isRaisingClaim) {
     return (
@@ -159,10 +166,24 @@ export const MyClaims = () => {
               </div>
               <div className="mt-8 flex justify-between">
                 <button onClick={() => setStep(3)} className="px-6 py-2.5 bg-background border border-border text-text font-bold rounded-lg hover:border-primary transition-colors">Back</button>
-                <button onClick={() => {
-                  alert("Claim Submitted Successfully!");
-                  setIsRaisingClaim(false);
-                }} className="px-6 py-2.5 bg-green-500 text-white font-bold rounded-lg hover:bg-green-600 transition-colors flex items-center gap-2 shadow-lg shadow-green-500/20"><CheckCircle2 className="w-5 h-5" /> Submit Claim</button>
+                <button 
+                  disabled={isCreating}
+                  onClick={async () => {
+                  try {
+                    await createClaim({
+                      policyId: selectedPolicyId || policiesData?.items?.[0]?.id,
+                      claimType: 'HOSPITALIZATION',
+                      claimAmount: 50000,
+                      raisedDate: new Date().toISOString()
+                    });
+                    setIsRaisingClaim(false);
+                  } catch (e) {
+                    // error handled in hook
+                  }
+                }} className="px-6 py-2.5 bg-green-500 text-white font-bold rounded-lg hover:bg-green-600 transition-colors flex items-center gap-2 shadow-lg shadow-green-500/20">
+                  {isCreating ? <Loader2 className="w-5 h-5 animate-spin" /> : <CheckCircle2 className="w-5 h-5" />}
+                  {isCreating ? 'Submitting...' : 'Submit Claim'}
+                </button>
               </div>
             </div>
           )}
@@ -291,31 +312,44 @@ export const MyClaims = () => {
             <div className="p-4 border-b border-border bg-background/50 flex justify-between items-center">
               <h3 className="font-bold text-text">Past Claims</h3>
             </div>
-            <table className="w-full text-left text-sm">
-              <thead className="bg-surface text-text-secondary border-b border-border">
-                <tr>
-                  <th className="px-6 py-4 font-medium">Claim ID</th>
-                  <th className="px-6 py-4 font-medium">Date</th>
-                  <th className="px-6 py-4 font-medium">Amount</th>
-                  <th className="px-6 py-4 font-medium">Status</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-border">
-                <tr className="hover:bg-surface/50 transition-colors">
-                  <td className="px-6 py-4">
-                    <span className="font-bold text-text block">CLM-11928</span>
-                    <span className="text-xs text-text-secondary">POL-882112</span>
-                  </td>
-                  <td className="px-6 py-4 text-text-secondary">15 Jan 2025</td>
-                  <td className="px-6 py-4 font-bold text-text">₹12,500</td>
-                  <td className="px-6 py-4">
-                    <span className="px-2 py-1 bg-green-500/10 text-green-500 text-xs font-bold rounded-full border border-green-500/20 flex items-center gap-1 w-max">
-                      <CheckCircle2 className="w-3 h-3" /> SETTLED
-                    </span>
-                  </td>
-                </tr>
-              </tbody>
-            </table>
+            
+            {isLoading ? (
+              <div className="p-6"><SkeletonLoader text="Loading claims..." /></div>
+            ) : isError ? (
+              <div className="p-6"><ErrorState title="Failed to load claims" onRetry={refetch} /></div>
+            ) : pastClaims.length === 0 ? (
+              <div className="p-6"><EmptyState title="No Past Claims" description="You have no settled or rejected claims." /></div>
+            ) : (
+              <table className="w-full text-left text-sm">
+                <thead className="bg-surface text-text-secondary border-b border-border">
+                  <tr>
+                    <th className="px-6 py-4 font-medium">Claim ID</th>
+                    <th className="px-6 py-4 font-medium">Date</th>
+                    <th className="px-6 py-4 font-medium">Amount</th>
+                    <th className="px-6 py-4 font-medium">Status</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-border">
+                  {pastClaims.map((claim: any) => (
+                    <tr key={claim.id} className="hover:bg-surface/50 transition-colors">
+                      <td className="px-6 py-4">
+                        <span className="font-bold text-text block">{claim.claimNumber}</span>
+                        <span className="text-xs text-text-secondary">{claim.policy?.policyNumber || claim.policyId}</span>
+                      </td>
+                      <td className="px-6 py-4 text-text-secondary">{format(new Date(claim.createdAt), 'dd MMM yyyy')}</td>
+                      <td className="px-6 py-4 font-bold text-text">₹{claim.settledAmount || claim.claimAmount}</td>
+                      <td className="px-6 py-4">
+                        <span className={`px-2 py-1 text-xs font-bold rounded-full border flex items-center gap-1 w-max ${
+                          claim.status === 'SETTLED' ? 'bg-green-500/10 text-green-500 border-green-500/20' : 'bg-red-500/10 text-red-500 border-red-500/20'
+                        }`}>
+                          <CheckCircle2 className="w-3 h-3" /> {claim.status}
+                        </span>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            )}
           </div>
         </div>
 

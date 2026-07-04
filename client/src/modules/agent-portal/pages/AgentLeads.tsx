@@ -15,33 +15,33 @@ import {
   FileText
 } from 'lucide-react';
 
-const MOCK_LEADS = [
-  { id: 1, name: 'Ravi Desai', mobile: '+91 9876543210', product: 'Health', source: 'Website', status: 'New', priority: 'High', nextFollowUp: 'Today 2:00 PM' },
-  { id: 2, name: 'Pooja Mehta', mobile: '+91 9123456789', product: 'Term Life', source: 'Referral', status: 'Contacted', priority: 'Medium', nextFollowUp: 'Tomorrow' },
-  { id: 3, name: 'Anil Kapoor', mobile: '+91 9988776655', product: 'Motor', source: 'Calculator', status: 'Quoted', priority: 'High', nextFollowUp: 'Today 5:00 PM' },
-  { id: 4, name: 'Sneha Rao', mobile: '+91 9876123450', product: 'Health', source: 'WhatsApp', status: 'Negotiation', priority: 'Medium', nextFollowUp: 'Monday' },
-];
+import { useLeads } from '@/hooks/useLeads';
+import { SkeletonLoader } from '@/components/shared/SkeletonLoader';
+import { ErrorState } from '@/components/shared/ErrorState';
 
 export const AgentLeads = () => {
   const [view, setView] = useState<'kanban' | 'table'>('kanban');
   const [selectedLead, setSelectedLead] = useState<any>(null);
+  const { data, isLoading, isError, refetch } = useLeads({ limit: 50 });
+
+  const leads = data?.items || [];
 
   const renderKanban = () => {
-    const columns = ['New', 'Contacted', 'Qualified', 'Quoted', 'Negotiation', 'Won', 'Lost'];
+    const columns = ['NEW', 'CONTACTED', 'QUALIFIED', 'PROPOSAL_SENT', 'WON', 'LOST'];
     
     return (
       <div className="flex gap-4 overflow-x-auto pb-4">
         {columns.map(col => (
           <div key={col} className="min-w-[300px] w-[300px] bg-surface-hover rounded-xl p-4 flex flex-col">
             <div className="flex justify-between items-center mb-4">
-              <h3 className="font-bold text-text text-sm uppercase tracking-wider">{col}</h3>
+              <h3 className="font-bold text-text text-sm uppercase tracking-wider">{col.replace('_', ' ')}</h3>
               <span className="bg-surface text-text-secondary text-xs font-bold px-2 py-1 rounded-lg border border-border">
-                {MOCK_LEADS.filter(l => l.status === col).length}
+                {leads.filter(l => l.status === col).length}
               </span>
             </div>
             
             <div className="space-y-3 flex-1">
-              {MOCK_LEADS.filter(l => l.status === col).map(lead => (
+              {leads.filter(l => l.status === col).map(lead => (
                 <div 
                   key={lead.id} 
                   onClick={() => setSelectedLead(lead)}
@@ -56,11 +56,11 @@ export const AgentLeads = () => {
                     <button className="text-text-secondary hover:text-text"><MoreVertical className="w-4 h-4" /></button>
                   </div>
                   <h4 className="font-bold text-text mb-1">{lead.name}</h4>
-                  <p className="text-xs text-text-secondary mb-3">{lead.product} • {lead.source}</p>
+                  <p className="text-xs text-text-secondary mb-3">{lead.source || 'Unknown Source'}</p>
                   
                   <div className="flex items-center justify-between mt-4 pt-3 border-t border-border">
                     <span className="text-xs font-medium text-text flex items-center gap-1">
-                      <Clock className="w-3 h-3 text-orange-500" /> {lead.nextFollowUp}
+                      <Clock className="w-3 h-3 text-orange-500" /> Follow Up
                     </span>
                     <div className="flex gap-1">
                       <button className="w-6 h-6 rounded-md bg-green-500/10 text-green-500 flex items-center justify-center hover:bg-green-500 hover:text-white transition-colors" title="WhatsApp">
@@ -94,21 +94,21 @@ export const AgentLeads = () => {
           </tr>
         </thead>
         <tbody className="divide-y divide-border">
-          {MOCK_LEADS.map(lead => (
+          {leads.map(lead => (
             <tr key={lead.id} className="hover:bg-surface-hover cursor-pointer transition-colors" onClick={() => setSelectedLead(lead)}>
               <td className="p-4">
                 <p className="font-bold text-text">{lead.name}</p>
                 <p className="text-xs text-text-secondary">{lead.mobile}</p>
               </td>
-              <td className="p-4 font-medium text-text">{lead.product}</td>
-              <td className="p-4 text-text-secondary">{lead.source}</td>
+              <td className="p-4 font-medium text-text">-</td>
+              <td className="p-4 text-text-secondary">{lead.source || '-'}</td>
               <td className="p-4">
                 <span className="px-2.5 py-1 bg-blue-500/10 text-blue-500 rounded-lg font-bold text-xs">
                   {lead.status}
                 </span>
               </td>
               <td className="p-4 text-text-secondary flex items-center gap-2">
-                <Clock className="w-4 h-4 text-orange-500" /> {lead.nextFollowUp}
+                <Clock className="w-4 h-4 text-orange-500" /> -
               </td>
               <td className="p-4">
                 <div className="flex gap-2" onClick={e => e.stopPropagation()}>
@@ -163,7 +163,17 @@ export const AgentLeads = () => {
 
       {/* Main Area */}
       <div className="flex-1 overflow-hidden flex flex-col">
-        {view === 'kanban' ? renderKanban() : renderTable()}
+        {isLoading ? (
+          <div className="flex-1 flex items-center justify-center">
+            <SkeletonLoader text="Loading leads..." />
+          </div>
+        ) : isError ? (
+          <div className="flex-1 flex items-center justify-center">
+            <ErrorState title="Failed to load leads" onRetry={refetch} />
+          </div>
+        ) : (
+          view === 'kanban' ? renderKanban() : renderTable()
+        )}
       </div>
 
       {/* Lead Details Modal */}

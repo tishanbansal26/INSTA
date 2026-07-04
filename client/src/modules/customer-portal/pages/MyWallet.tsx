@@ -1,20 +1,85 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { 
-  Wallet, 
-  IndianRupee, 
-  CreditCard, 
-  Clock, 
-  Download, 
-  Settings, 
-  ArrowRight,
-  Landmark,
-  Smartphone,
-  CheckCircle2,
-  Mail
+  Wallet, IndianRupee, CreditCard, Clock, Download, 
+  Settings, ArrowRight, Landmark, Smartphone, 
+  CheckCircle2, Mail, Loader2
 } from 'lucide-react';
+import { usePayments, usePaymentMutations } from '@/hooks/usePayments';
+import { SkeletonLoader } from '@/components/shared/SkeletonLoader';
+import { ErrorState } from '@/components/shared/ErrorState';
+import { EmptyState } from '@/components/shared/EmptyState';
+import { format } from 'date-fns';
+
+// Add Razorpay to window object
+declare global {
+  interface Window {
+    Razorpay: any;
+  }
+}
 
 export const MyWallet = () => {
   const [activeTab, setActiveTab] = useState('transactions');
+  const { data: paymentsData, isLoading, isError, refetch } = usePayments({ limit: 20 });
+  const { data: pendingPayments } = usePayments({ paymentStatus: 'PENDING', limit: 1 });
+  const { createOrder, verifyPayment, isCreatingOrder, isVerifying } = usePaymentMutations();
+
+  const nextDue = pendingPayments?.items?.[0];
+
+  // Load Razorpay Script
+  useEffect(() => {
+    const script = document.createElement('script');
+    script.src = 'https://checkout.razorpay.com/v1/checkout.js';
+    script.async = true;
+    document.body.appendChild(script);
+    return () => { document.body.removeChild(script); };
+  }, []);
+
+  const handlePayment = async () => {
+    if (!nextDue) return;
+
+    try {
+      // 1. Create order on our backend
+      const orderData = await createOrder({ 
+        amount: nextDue.amount, 
+        receipt: nextDue.id 
+      });
+
+      // 2. Open Razorpay Checkout
+      const options = {
+        key: 'rzp_test_dummykey123', // Dummy test key for now
+        amount: orderData.amount,
+        currency: orderData.currency,
+        name: 'InsureFlow Pro',
+        description: `Premium Payment for ${nextDue.policy?.policyNumber || nextDue.id}`,
+        order_id: orderData.id,
+        handler: async (response: any) => {
+          // 3. Verify payment on our backend
+          await verifyPayment({
+            razorpay_order_id: response.razorpay_order_id,
+            razorpay_payment_id: response.razorpay_payment_id,
+            razorpay_signature: response.razorpay_signature,
+            paymentId: nextDue.id
+          });
+        },
+        prefill: {
+          name: nextDue.policy?.client?.firstName || 'Customer',
+          email: 'customer@example.com',
+          contact: '9999999999'
+        },
+        theme: {
+          color: '#3b82f6' // Primary color
+        }
+      };
+
+      const rzp = new window.Razorpay(options);
+      rzp.on('payment.failed', function (response: any){
+        console.error("Payment failed", response.error);
+      });
+      rzp.open();
+    } catch (error) {
+      console.error("Payment initiation failed", error);
+    }
+  };
 
   return (
     <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
@@ -75,76 +140,55 @@ export const MyWallet = () => {
             <div className="flex-1 p-0 overflow-y-auto bg-background">
               {activeTab === 'transactions' && (
                 <div className="animate-in fade-in duration-300">
-                  <table className="w-full text-left text-sm">
-                    <thead className="bg-surface text-text-secondary border-b border-border">
-                      <tr>
-                        <th className="px-6 py-4 font-medium">Date</th>
-                        <th className="px-6 py-4 font-medium">Description</th>
-                        <th className="px-6 py-4 font-medium">Amount</th>
-                        <th className="px-6 py-4 font-medium">Status</th>
-                        <th className="px-6 py-4 font-medium text-right">Receipt</th>
-                      </tr>
-                    </thead>
-                    <tbody className="divide-y divide-border">
-                      <tr className="hover:bg-surface/50 transition-colors">
-                        <td className="px-6 py-4 text-text-secondary">10 Oct 2026</td>
-                        <td className="px-6 py-4">
-                          <p className="font-medium text-text">Claim Settlement</p>
-                          <p className="text-xs text-text-secondary">POL-9928134</p>
-                        </td>
-                        <td className="px-6 py-4 font-bold text-green-500">+ ₹1,50,000</td>
-                        <td className="px-6 py-4">
-                          <span className="px-2 py-1 bg-green-500/10 text-green-500 text-xs font-bold rounded-full border border-green-500/20 flex items-center gap-1 w-max">
-                            <CheckCircle2 className="w-3 h-3" /> CREDITED
-                          </span>
-                        </td>
-                        <td className="px-6 py-4 text-right">
-                          <div className="flex justify-end gap-2">
-                            <button className="p-2 bg-background border border-border rounded hover:text-primary transition-colors" title="Download PDF"><Download className="w-4 h-4" /></button>
-                            <button className="p-2 bg-background border border-border rounded hover:text-primary transition-colors" title="Email Receipt"><Mail className="w-4 h-4" /></button>
-                          </div>
-                        </td>
-                      </tr>
-                      <tr className="hover:bg-surface/50 transition-colors">
-                        <td className="px-6 py-4 text-text-secondary">12 Sep 2026</td>
-                        <td className="px-6 py-4">
-                          <p className="font-medium text-text">Premium Paid</p>
-                          <p className="text-xs text-text-secondary">Term Life Renewal</p>
-                        </td>
-                        <td className="px-6 py-4 font-bold text-text">- ₹15,000</td>
-                        <td className="px-6 py-4">
-                          <span className="px-2 py-1 bg-green-500/10 text-green-500 text-xs font-bold rounded-full border border-green-500/20 flex items-center gap-1 w-max">
-                            <CheckCircle2 className="w-3 h-3" /> SUCCESS
-                          </span>
-                        </td>
-                        <td className="px-6 py-4 text-right">
-                          <div className="flex justify-end gap-2">
-                            <button className="p-2 bg-background border border-border rounded hover:text-primary transition-colors" title="Download PDF"><Download className="w-4 h-4" /></button>
-                            <button className="p-2 bg-background border border-border rounded hover:text-primary transition-colors" title="Email Receipt"><Mail className="w-4 h-4" /></button>
-                          </div>
-                        </td>
-                      </tr>
-                      <tr className="hover:bg-surface/50 transition-colors">
-                        <td className="px-6 py-4 text-text-secondary">01 Sep 2026</td>
-                        <td className="px-6 py-4">
-                          <p className="font-medium text-text">Premium Paid</p>
-                          <p className="text-xs text-text-secondary">New Policy: POL-9928134</p>
-                        </td>
-                        <td className="px-6 py-4 font-bold text-text">- ₹30,200</td>
-                        <td className="px-6 py-4">
-                          <span className="px-2 py-1 bg-green-500/10 text-green-500 text-xs font-bold rounded-full border border-green-500/20 flex items-center gap-1 w-max">
-                            <CheckCircle2 className="w-3 h-3" /> SUCCESS
-                          </span>
-                        </td>
-                        <td className="px-6 py-4 text-right">
-                          <div className="flex justify-end gap-2">
-                            <button className="p-2 bg-background border border-border rounded hover:text-primary transition-colors" title="Download PDF"><Download className="w-4 h-4" /></button>
-                            <button className="p-2 bg-background border border-border rounded hover:text-primary transition-colors" title="Email Receipt"><Mail className="w-4 h-4" /></button>
-                          </div>
-                        </td>
-                      </tr>
-                    </tbody>
-                  </table>
+                  {isLoading ? (
+                    <div className="p-6"><SkeletonLoader text="Loading transactions..." /></div>
+                  ) : isError ? (
+                    <div className="p-6"><ErrorState title="Failed to load payments" onRetry={refetch} /></div>
+                  ) : !paymentsData?.items || paymentsData.items.length === 0 ? (
+                    <div className="p-6"><EmptyState title="No transactions" description="You have no payment history yet." /></div>
+                  ) : (
+                    <table className="w-full text-left text-sm">
+                      <thead className="bg-surface text-text-secondary border-b border-border">
+                        <tr>
+                          <th className="px-6 py-4 font-medium">Date</th>
+                          <th className="px-6 py-4 font-medium">Description</th>
+                          <th className="px-6 py-4 font-medium">Amount</th>
+                          <th className="px-6 py-4 font-medium">Status</th>
+                          <th className="px-6 py-4 font-medium text-right">Receipt</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-border">
+                        {paymentsData.items.map((payment: any) => (
+                          <tr key={payment.id} className="hover:bg-surface/50 transition-colors">
+                            <td className="px-6 py-4 text-text-secondary">{format(new Date(payment.createdAt), 'dd MMM yyyy')}</td>
+                            <td className="px-6 py-4">
+                              <p className="font-medium text-text">{payment.paymentMode || 'Payment'}</p>
+                              <p className="text-xs text-text-secondary">{payment.policy?.policyNumber || payment.id}</p>
+                            </td>
+                            <td className="px-6 py-4 font-bold text-text">₹{payment.amount}</td>
+                            <td className="px-6 py-4">
+                              <span className={`px-2 py-1 text-xs font-bold rounded-full border flex items-center gap-1 w-max ${
+                                payment.paymentStatus === 'SUCCESS' ? 'bg-green-500/10 text-green-500 border-green-500/20' : 
+                                payment.paymentStatus === 'PENDING' ? 'bg-orange-500/10 text-orange-500 border-orange-500/20' :
+                                'bg-red-500/10 text-red-500 border-red-500/20'
+                              }`}>
+                                {payment.paymentStatus === 'SUCCESS' && <CheckCircle2 className="w-3 h-3" />}
+                                {payment.paymentStatus}
+                              </span>
+                            </td>
+                            <td className="px-6 py-4 text-right">
+                              {payment.paymentStatus === 'SUCCESS' && (
+                                <div className="flex justify-end gap-2">
+                                  <button className="p-2 bg-background border border-border rounded hover:text-primary transition-colors" title="Download PDF"><Download className="w-4 h-4" /></button>
+                                  <button className="p-2 bg-background border border-border rounded hover:text-primary transition-colors" title="Email Receipt"><Mail className="w-4 h-4" /></button>
+                                </div>
+                              )}
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  )}
                 </div>
               )}
 
@@ -208,16 +252,32 @@ export const MyWallet = () => {
             </button>
           </div>
 
-          <div className="bg-orange-500/5 border border-orange-500/20 rounded-xl p-6">
-            <h3 className="font-bold text-orange-500 flex items-center gap-2 mb-2">
-              <Clock className="w-5 h-5" /> Next Premium Due
-            </h3>
-            <p className="text-3xl font-black text-text my-2">₹15,000</p>
-            <p className="text-sm text-text-secondary">Term Life Insurance (POL-11234)<br/>Due on 12 Nov 2026</p>
-            <button className="w-full mt-4 py-2.5 bg-orange-500 text-white font-bold rounded-lg shadow-lg shadow-orange-500/20 hover:bg-orange-600 transition-colors">
-              Pay Now
-            </button>
-          </div>
+          {nextDue ? (
+            <div className="bg-orange-500/5 border border-orange-500/20 rounded-xl p-6">
+              <h3 className="font-bold text-orange-500 flex items-center gap-2 mb-2">
+                <Clock className="w-5 h-5" /> Next Premium Due
+              </h3>
+              <p className="text-3xl font-black text-text my-2">₹{nextDue.amount}</p>
+              <p className="text-sm text-text-secondary">
+                {nextDue.policy?.policyNumber || nextDue.id}<br/>
+                Due on {format(new Date(nextDue.createdAt), 'dd MMM yyyy')}
+              </p>
+              <button 
+                onClick={handlePayment}
+                disabled={isCreatingOrder || isVerifying}
+                className="w-full mt-4 py-2.5 bg-orange-500 text-white font-bold rounded-lg shadow-lg shadow-orange-500/20 hover:bg-orange-600 transition-colors flex items-center justify-center gap-2"
+              >
+                {(isCreatingOrder || isVerifying) ? <Loader2 className="w-5 h-5 animate-spin" /> : null}
+                {isVerifying ? 'Verifying...' : 'Pay Now'}
+              </button>
+            </div>
+          ) : (
+            <div className="bg-green-500/5 border border-green-500/20 rounded-xl p-6 text-center">
+              <CheckCircle2 className="w-8 h-8 text-green-500 mx-auto mb-3" />
+              <h3 className="font-bold text-green-500 mb-1">All Caught Up!</h3>
+              <p className="text-sm text-text-secondary">You have no pending premium payments.</p>
+            </div>
+          )}
         </div>
 
       </div>

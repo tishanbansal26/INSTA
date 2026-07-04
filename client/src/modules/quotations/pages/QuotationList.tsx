@@ -1,25 +1,27 @@
 import { useState } from 'react';
-import { Plus, Search, Filter, Edit, FileText, CheckCircle, XCircle, Trash2, Mail, Download } from 'lucide-react';
+import { Search, Filter, Eye, Download, FileText, Send, Plus, Trash2, Mail } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-
-const MOCK_QUOTES = [
-  { id: '1', quoteNumber: 'QT-2026-001', client: 'Rahul Sharma', plan: 'Optima Restore', amount: '₹14,500', status: 'DRAFT' },
-  { id: '2', quoteNumber: 'QT-2026-002', client: 'Priya Patel', plan: 'Family Health', amount: '₹22,100', status: 'SENT' },
-  { id: '3', quoteNumber: 'QT-2026-003', client: 'Anil Kumar', plan: 'iShield Life', amount: '₹8,400', status: 'ACCEPTED' },
-];
+import { useQuotations } from '@/hooks/useQuotations';
+import { SkeletonLoader } from '@/components/shared/SkeletonLoader';
+import { ErrorState } from '@/components/shared/ErrorState';
+import { EmptyState } from '@/components/shared/EmptyState';
+import { format } from 'date-fns';
 
 export function QuotationList() {
   const [searchTerm, setSearchTerm] = useState('');
+  const [page, setPage] = useState(1);
+  const { data, isLoading, isError, refetch } = useQuotations({ page, limit: 10, search: searchTerm });
   const [selectedRows, setSelectedRows] = useState<string[]>([]);
   const navigate = useNavigate();
 
   const toggleSelectAll = () => {
-    if (selectedRows.length === MOCK_QUOTES.length) {
+    if (!data?.items) return;
+    if (selectedRows.length === data.items.length) {
       setSelectedRows([]);
     } else {
-      setSelectedRows(MOCK_QUOTES.map(q => q.id));
+      setSelectedRows(data.items.map((q: any) => q.id));
     }
   };
 
@@ -88,66 +90,76 @@ export function QuotationList() {
                 <th className="px-6 py-4 font-medium w-10">
                   <input 
                     type="checkbox" 
-                    className="rounded border-gray-300 text-primary focus:ring-primary"
-                    checked={selectedRows.length === MOCK_QUOTES.length && MOCK_QUOTES.length > 0}
+                    className="rounded border-border"
+                    checked={data?.items?.length ? selectedRows.length === data.items.length : false}
                     onChange={toggleSelectAll}
                   />
                 </th>
                 <th className="px-6 py-4 font-medium">Quote ID</th>
                 <th className="px-6 py-4 font-medium">Client & Plan</th>
                 <th className="px-6 py-4 font-medium">Premium</th>
+                <th className="px-6 py-4 font-medium">Valid Till</th>
                 <th className="px-6 py-4 font-medium">Status</th>
                 <th className="px-6 py-4 font-medium text-right">Actions</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-border">
-              {MOCK_QUOTES.map((quote) => (
-                <tr key={quote.id} className={`hover:bg-secondary/30 transition-colors ${selectedRows.includes(quote.id) ? 'bg-primary/5' : ''}`}>
-                  <td className="px-6 py-4">
-                    <input 
-                      type="checkbox" 
-                      className="rounded border-gray-300 text-primary focus:ring-primary"
-                      checked={selectedRows.includes(quote.id)}
-                      onChange={() => toggleSelectRow(quote.id)}
-                    />
-                  </td>
-                  <td className="px-6 py-4 font-medium text-text">{quote.quoteNumber}</td>
-                  <td className="px-6 py-4">
-                    <div className="font-medium text-text">{quote.client}</div>
-                    <div className="text-xs text-muted-foreground">{quote.plan}</div>
-                  </td>
-                  <td className="px-6 py-4 font-bold text-text">{quote.amount}</td>
-                  <td className="px-6 py-4">
-                    <span className={"px-2.5 py-1 rounded-full text-xs font-medium " + 
-                      (quote.status === 'ACCEPTED' ? 'bg-success/10 text-success' : 
-                       quote.status === 'SENT' ? 'bg-primary/10 text-primary' : 
-                       'bg-muted text-muted-foreground')
-                    }>
-                      {quote.status}
-                    </span>
-                  </td>
-                  <td className="px-6 py-4 text-right">
-                    <div className="flex items-center justify-end space-x-2">
-                      <Button variant="ghost" size="icon" className="h-8 w-8 text-primary hover:text-primary hover:bg-primary/10" title="Preview PDF">
-                        <FileText className="h-4 w-4" />
-                      </Button>
-                      {quote.status === 'SENT' && (
-                        <>
-                          <Button variant="ghost" size="icon" className="h-8 w-8 text-success hover:text-success hover:bg-success/10" title="Accept">
-                            <CheckCircle className="h-4 w-4" />
+              {isLoading ? (
+                <tr><td colSpan={8} className="py-8"><SkeletonLoader text="Loading quotations..." /></td></tr>
+              ) : isError ? (
+                <tr><td colSpan={8} className="py-8"><ErrorState title="Failed to load quotations" onRetry={refetch} /></td></tr>
+              ) : !data?.items || data.items.length === 0 ? (
+                <tr><td colSpan={8} className="py-8"><EmptyState title="No quotations found" description="Try adjusting your search criteria." /></td></tr>
+              ) : (
+                data?.items.map((quote: any) => (
+                  <tr key={quote.id} className="hover:bg-secondary/30 transition-colors">
+                    <td className="px-6 py-4">
+                      <input 
+                        type="checkbox" 
+                        className="rounded border-border"
+                        checked={selectedRows.includes(quote.id)}
+                        onChange={() => toggleSelectRow(quote.id)}
+                      />
+                    </td>
+                    <td className="px-6 py-4 font-medium text-text">{quote.quotationNumber}</td>
+                    <td className="px-6 py-4">
+                      <div className="font-medium text-text">{quote.client?.firstName} {quote.client?.lastName}</div>
+                      <div className="text-xs text-muted-foreground">{quote.client?.phone}</div>
+                    </td>
+                    <td className="px-6 py-4">
+                      <div className="font-medium text-text">{quote.plan?.name}</div>
+                      <div className="text-xs text-muted-foreground">{quote.plan?.company?.name}</div>
+                    </td>
+                    <td className="px-6 py-4 font-mono text-text">₹{quote.totalPremium}</td>
+                    <td className="px-6 py-4 text-text">{format(new Date(quote.validTill), 'dd MMM yyyy')}</td>
+                    <td className="px-6 py-4">
+                      <span className={"px-2.5 py-1 rounded-full text-xs font-medium " + 
+                        (quote.status === 'ACCEPTED' ? 'bg-success/10 text-success' : 
+                         quote.status === 'REJECTED' ? 'bg-danger/10 text-danger' : 
+                         quote.status === 'SENT' ? 'bg-primary/10 text-primary' :
+                         'bg-warning/10 text-warning')
+                      }>
+                        {quote.status}
+                      </span>
+                    </td>
+                    <td className="px-6 py-4 text-right">
+                      <div className="flex items-center justify-end space-x-2">
+                        {quote.status === 'DRAFT' && (
+                          <Button variant="ghost" size="icon" className="h-8 w-8 text-primary hover:text-primary hover:bg-primary/10" title="Send Quote">
+                            <Send className="h-4 w-4" />
                           </Button>
-                          <Button variant="ghost" size="icon" className="h-8 w-8 text-danger hover:text-danger hover:bg-danger/10" title="Reject">
-                            <XCircle className="h-4 w-4" />
-                          </Button>
-                        </>
-                      )}
-                      <Button variant="ghost" size="icon" className="h-8 w-8 text-warning hover:text-warning hover:bg-warning/10" title="Edit">
-                        <Edit className="h-4 w-4" />
-                      </Button>
-                    </div>
-                  </td>
-                </tr>
-              ))}
+                        )}
+                        <Button variant="ghost" size="icon" className="h-8 w-8 text-text hover:text-text hover:bg-secondary" title="View Details">
+                          <Eye className="h-4 w-4" />
+                        </Button>
+                        <Button variant="ghost" size="icon" className="h-8 w-8 text-text hover:text-text hover:bg-secondary" title="Download PDF">
+                          <Download className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    </td>
+                  </tr>
+                ))
+              )}
             </tbody>
           </table>
         </div>

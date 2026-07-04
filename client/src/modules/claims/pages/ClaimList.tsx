@@ -1,26 +1,16 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { Button } from '../../../components/ui/button';
 import { Plus, Search, Eye } from 'lucide-react';
-import { apiClient as api } from '../../../services/apiClient';
 import { format } from 'date-fns';
+import { useClaims } from '@/hooks/useClaims';
+import { SkeletonLoader } from '@/components/shared/SkeletonLoader';
+import { ErrorState } from '@/components/shared/ErrorState';
+import { EmptyState } from '@/components/shared/EmptyState';
 
 export function ClaimList() {
-  const [claims, setClaims] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    const fetchClaims = async () => {
-      try {
-        const response = await api.get('/claims');
-        setClaims(response.data);
-      } catch (error) {
-        console.error('Failed to fetch claims', error);
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchClaims();
-  }, []);
+  const [page, setPage] = useState(1);
+  const [searchTerm, setSearchTerm] = useState('');
+  const { data, isLoading, isError, refetch } = useClaims({ page, limit: 10, search: searchTerm });
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -60,6 +50,8 @@ export function ClaimList() {
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-text-muted" />
             <input 
               type="text"
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
               placeholder="Search claims..."
               className="w-full rounded-md border border-border bg-background pl-10 pr-4 py-2 text-sm text-text focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
             />
@@ -81,12 +73,14 @@ export function ClaimList() {
               </tr>
             </thead>
             <tbody className="divide-y divide-border">
-              {loading ? (
-                <tr><td colSpan={8} className="text-center py-8 text-text-muted">Loading claims...</td></tr>
-              ) : claims.length === 0 ? (
-                <tr><td colSpan={8} className="text-center py-8 text-text-muted">No claims found.</td></tr>
+              {isLoading ? (
+                <tr><td colSpan={8} className="py-8"><SkeletonLoader text="Loading claims..." /></td></tr>
+              ) : isError ? (
+                <tr><td colSpan={8} className="py-8"><ErrorState title="Failed to load claims" onRetry={refetch} /></td></tr>
+              ) : data?.items.length === 0 ? (
+                <tr><td colSpan={8} className="py-8"><EmptyState title="No claims found" description="Create a new claim to get started." /></td></tr>
               ) : (
-                claims.map((claim) => (
+                data?.items.map((claim: any) => (
                   <tr key={claim.id} className="hover:bg-background/50 transition-colors">
                     <td className="px-4 py-3 font-medium text-text">{claim.claimNumber}</td>
                     <td className="px-4 py-3 text-text">{claim.client?.firstName} {claim.client?.lastName}</td>
@@ -97,7 +91,7 @@ export function ClaimList() {
                       </span>
                     </td>
                     <td className="px-4 py-3 font-mono text-text">₹{claim.claimAmount}</td>
-                    <td className="px-4 py-3 text-text">{format(new Date(claim.raisedDate), 'dd MMM yyyy')}</td>
+                    <td className="px-4 py-3 text-text">{claim.raisedDate ? format(new Date(claim.raisedDate), 'dd MMM yyyy') : '-'}</td>
                     <td className="px-4 py-3">
                       <span className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(claim.status)}`}>
                         {claim.status.replace(/_/g, ' ')}

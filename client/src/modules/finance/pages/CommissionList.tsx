@@ -1,6 +1,11 @@
 import { IndianRupee, TrendingUp, Filter, Download } from 'lucide-react';
+import { useCommissions } from '@/hooks/useCommissions';
+import { SkeletonLoader } from '@/components/shared/SkeletonLoader';
+import { ErrorState } from '@/components/shared/ErrorState';
+import { EmptyState } from '@/components/shared/EmptyState';
 
 export const CommissionList = () => {
+  const { data, isLoading, isError, refetch } = useCommissions({ limit: 10 });
   return (
     <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
       
@@ -57,22 +62,30 @@ export const CommissionList = () => {
               </tr>
             </thead>
             <tbody className="divide-y divide-border">
-              {[1, 2, 3, 4, 5].map((item) => (
-                <tr key={item} className="hover:bg-background/50 transition-colors">
-                  <td className="px-6 py-4 font-medium text-primary">POL-9928{item}</td>
-                  <td className="px-6 py-4 text-text">Ravi Kumar</td>
-                  <td className="px-6 py-4 text-text">₹25,000</td>
-                  <td className="px-6 py-4 text-text">15%</td>
-                  <td className="px-6 py-4 font-bold text-text">₹3,750</td>
-                  <td className="px-6 py-4">
-                    {item % 2 === 0 ? (
-                      <span className="px-2.5 py-1 bg-green-500/10 text-green-500 text-xs font-bold rounded-full">PAID</span>
-                    ) : (
-                      <span className="px-2.5 py-1 bg-orange-500/10 text-orange-500 text-xs font-bold rounded-full">PENDING</span>
-                    )}
-                  </td>
-                </tr>
-              ))}
+              {isLoading ? (
+                <tr><td colSpan={6} className="py-8"><SkeletonLoader text="Loading commissions..." /></td></tr>
+              ) : isError ? (
+                <tr><td colSpan={6} className="py-8"><ErrorState title="Failed to load commissions" onRetry={refetch} /></td></tr>
+              ) : data?.items?.length === 0 ? (
+                <tr><td colSpan={6} className="py-8"><EmptyState title="No commissions found" description="No commission records are available at this time." /></td></tr>
+              ) : (
+                data?.items?.map((item: any) => (
+                  <tr key={item.id} className="hover:bg-background/50 transition-colors">
+                    <td className="px-6 py-4 font-medium text-primary">{item.policy?.policyNumber}</td>
+                    <td className="px-6 py-4 text-text">{item.policy?.client?.firstName} {item.policy?.client?.lastName}</td>
+                    <td className="px-6 py-4 text-text">₹{item.totalCommissionAmount}</td>
+                    <td className="px-6 py-4 text-text">15%</td>
+                    <td className="px-6 py-4 font-bold text-text">₹{item.totalCommissionAmount}</td>
+                    <td className="px-6 py-4">
+                      {item.status === 'PAID' ? (
+                        <span className="px-2.5 py-1 bg-success/10 text-success text-xs font-bold rounded-full">PAID</span>
+                      ) : (
+                        <span className="px-2.5 py-1 bg-warning/10 text-warning text-xs font-bold rounded-full">PENDING</span>
+                      )}
+                    </td>
+                  </tr>
+                ))
+              )}
             </tbody>
           </table>
         </div>

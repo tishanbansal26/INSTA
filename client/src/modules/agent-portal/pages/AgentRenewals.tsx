@@ -6,20 +6,16 @@ import {
   MessageCircle, 
   Mail, 
   FileText,
-  AlertTriangle,
-  Clock,
-  CheckCircle2
-} from 'lucide-react';
-
-const MOCK_RENEWALS = [
-  { id: 1, client: 'Sanjay Kumar', policyNo: 'TAT-1122-9988', product: 'Motor Insurance', premium: '₹8,500', status: 'Overdue', daysLeft: -3, type: 'Motor' },
-  { id: 2, client: 'Vikram Singh', policyNo: 'HDF-8832-1102', product: 'Optima Secure', premium: '₹14,500', status: 'Today', daysLeft: 0, type: 'Health' },
-  { id: 3, client: 'Neha Gupta', policyNo: 'ICI-9922-3344', product: 'iProtect Smart', premium: '₹12,500', status: '15 Days', daysLeft: 12, type: 'Life' },
-  { id: 4, client: 'Priya Patel', policyNo: 'STA-5544-2211', product: 'Comprehensive Health', premium: '₹22,000', status: '30 Days', daysLeft: 28, type: 'Health' },
-];
+import { CalendarClock, Search, Filter, Phone, Mail, FileText, Send } from 'lucide-react';
+import { useRenewals } from '@/hooks/useRenewals';
+import { SkeletonLoader } from '@/components/shared/SkeletonLoader';
+import { ErrorState } from '@/components/shared/ErrorState';
+import { format } from 'date-fns';
 
 export const AgentRenewals = () => {
   const [activeTab, setActiveTab] = useState('All');
+  const { data, isLoading, isError, refetch } = useRenewals({ limit: 50 });
+  const renewals = data?.items || [];
 
   const tabs = ['All', 'Overdue', 'Today', '15 Days', '30 Days'];
 
@@ -47,7 +43,7 @@ export const AgentRenewals = () => {
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         <div className="bg-red-500/10 border border-red-500/20 rounded-xl p-5 hover:border-red-500/50 transition-colors">
           <p className="text-sm font-bold text-red-700 dark:text-red-400 mb-1 flex items-center gap-2">
-            <AlertTriangle className="w-4 h-4" /> Overdue
+            <CalendarClock className="w-4 h-4" /> Overdue
           </p>
           <h3 className="text-2xl font-black text-red-700 dark:text-red-400 mt-1">₹8,500</h3>
           <p className="text-xs font-medium text-red-600 dark:text-red-500 mt-2">1 Policy at risk</p>
@@ -55,7 +51,7 @@ export const AgentRenewals = () => {
         
         <div className="bg-orange-500/10 border border-orange-500/20 rounded-xl p-5 hover:border-orange-500/50 transition-colors">
           <p className="text-sm font-bold text-orange-700 dark:text-orange-400 mb-1 flex items-center gap-2">
-            <Clock className="w-4 h-4" /> Today
+            <CalendarClock className="w-4 h-4" /> Today
           </p>
           <h3 className="text-2xl font-black text-orange-700 dark:text-orange-400 mt-1">₹14,500</h3>
           <p className="text-xs font-medium text-orange-600 dark:text-orange-500 mt-2">1 Policy expiring</p>
@@ -63,7 +59,7 @@ export const AgentRenewals = () => {
 
         <div className="bg-blue-500/10 border border-blue-500/20 rounded-xl p-5 hover:border-blue-500/50 transition-colors">
           <p className="text-sm font-bold text-blue-700 dark:text-blue-400 mb-1 flex items-center gap-2">
-            <RotateCw className="w-4 h-4" /> Next 30 Days
+            <CalendarClock className="w-4 h-4" /> Next 30 Days
           </p>
           <h3 className="text-2xl font-black text-blue-700 dark:text-blue-400 mt-1">₹34,500</h3>
           <p className="text-xs font-medium text-blue-600 dark:text-blue-500 mt-2">2 Policies upcoming</p>
@@ -71,7 +67,7 @@ export const AgentRenewals = () => {
 
         <div className="bg-green-500/10 border border-green-500/20 rounded-xl p-5 hover:border-green-500/50 transition-colors">
           <p className="text-sm font-bold text-green-700 dark:text-green-400 mb-1 flex items-center gap-2">
-            <CheckCircle2 className="w-4 h-4" /> Retained (MTD)
+            <CalendarClock className="w-4 h-4" /> Retained (MTD)
           </p>
           <h3 className="text-2xl font-black text-green-700 dark:text-green-400 mt-1">94%</h3>
           <p className="text-xs font-medium text-green-600 dark:text-green-500 mt-2">Great job!</p>
@@ -104,48 +100,54 @@ export const AgentRenewals = () => {
             </tr>
           </thead>
           <tbody className="divide-y divide-border">
-            {MOCK_RENEWALS.filter(r => activeTab === 'All' || r.status === activeTab).map(renewal => (
-              <tr key={renewal.id} className="hover:bg-surface-hover transition-colors">
-                <td className="p-4">
-                  <p className="font-bold text-text">{renewal.client}</p>
-                  <p className="text-xs text-text-secondary">{renewal.policyNo}</p>
-                </td>
-                <td className="p-4">
-                  <p className="font-medium text-text">{renewal.product}</p>
-                  <span className={`text-[10px] font-bold px-2 py-0.5 rounded mt-1 inline-block ${
-                    renewal.type === 'Health' ? 'bg-red-500/10 text-red-500' :
-                    renewal.type === 'Life' ? 'bg-blue-500/10 text-blue-500' :
-                    'bg-orange-500/10 text-orange-500'
-                  }`}>
-                    {renewal.type}
-                  </span>
-                </td>
-                <td className="p-4 font-black text-text">{renewal.premium}</td>
-                <td className="p-4">
-                  <span className={`flex items-center gap-1.5 text-xs font-bold px-2.5 py-1 rounded-full w-fit ${
-                    renewal.status === 'Overdue' ? 'bg-red-500/10 text-red-500' :
-                    renewal.status === 'Today' ? 'bg-orange-500/10 text-orange-500' :
-                    'bg-blue-500/10 text-blue-500'
-                  }`}>
-                    {renewal.status === 'Overdue' ? <AlertTriangle className="w-3 h-3" /> : <Clock className="w-3 h-3" />}
-                    {renewal.daysLeft < 0 ? `${Math.abs(renewal.daysLeft)} days overdue` : `${renewal.daysLeft} days left`}
-                  </span>
-                </td>
-                <td className="p-4">
-                  <div className="flex justify-end gap-2">
-                    <button className="w-8 h-8 rounded-lg bg-green-500/10 text-green-500 flex items-center justify-center hover:bg-green-500 hover:text-white transition-colors" title="Send WhatsApp Link">
-                      <MessageCircle className="w-4 h-4" />
-                    </button>
-                    <button className="w-8 h-8 rounded-lg bg-blue-500/10 text-blue-500 flex items-center justify-center hover:bg-blue-500 hover:text-white transition-colors" title="Send Email Link">
-                      <Mail className="w-4 h-4" />
-                    </button>
-                    <button className="w-8 h-8 rounded-lg bg-surface border border-border text-text flex items-center justify-center hover:border-primary transition-colors" title="Generate Quote">
-                      <FileText className="w-4 h-4" />
-                    </button>
-                  </div>
-                </td>
-              </tr>
-            ))}
+            {isLoading ? (
+              <tr><td colSpan={7} className="p-8"><SkeletonLoader text="Loading renewals..." /></td></tr>
+            ) : isError ? (
+              <tr><td colSpan={7} className="p-8"><ErrorState title="Failed to load renewals" onRetry={refetch} /></td></tr>
+            ) : renewals.length === 0 ? (
+              <tr><td colSpan={7} className="p-8 text-center text-text-secondary">No renewals found.</td></tr>
+            ) : (
+              renewals.filter((r: any) => activeTab === 'All' || r.status === activeTab.toUpperCase()).map((renewal: any) => (
+                <tr key={renewal.id} className="hover:bg-surface-hover transition-colors">
+                  <td className="p-4">
+                    <p className="font-bold text-text">{renewal.policy?.client?.firstName} {renewal.policy?.client?.lastName}</p>
+                    <p className="text-xs text-text-secondary">{renewal.policy?.client?.phone}</p>
+                  </td>
+                  <td className="p-4">
+                    <p className="font-medium text-text">{renewal.policy?.policyNumber}</p>
+                    <p className="text-xs text-text-secondary">Health</p>
+                  </td>
+                  <td className="p-4 font-bold text-text">₹{renewal.premiumAmount}</td>
+                  <td className="p-4">
+                    <p className={`font-bold ${new Date(renewal.renewalDate) < new Date() ? 'text-red-500' : 'text-text'}`}>
+                      {format(new Date(renewal.renewalDate), 'dd MMM yyyy')}
+                    </p>
+                    <p className="text-xs text-text-secondary">
+                      {Math.max(0, Math.ceil((new Date(renewal.renewalDate).getTime() - new Date().getTime()) / (1000 * 3600 * 24)))} days left
+                    </p>
+                  </td>
+                  <td className="p-4">
+                    <span className={`text-xs font-bold px-2.5 py-1 rounded-full ${
+                      renewal.status === 'RENEWED' ? 'bg-green-500/10 text-green-500' :
+                      renewal.status === 'EXPIRING' ? 'bg-red-500/10 text-red-500' :
+                      'bg-orange-500/10 text-orange-500'
+                    }`}>
+                      {renewal.status}
+                    </span>
+                  </td>
+                  <td className="p-4">
+                    <div className="flex justify-end gap-2">
+                      <button className="w-8 h-8 rounded-lg bg-green-500/10 text-green-500 flex items-center justify-center hover:bg-green-500 hover:text-white transition-colors" title="Send WhatsApp Link">
+                        <Send className="w-4 h-4" />
+                      </button>
+                      <button className="w-8 h-8 rounded-lg bg-primary/10 text-primary flex items-center justify-center hover:bg-primary hover:text-white transition-colors" title="Call Client">
+                        <Phone className="w-4 h-4" />
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              ))
+            )}
           </tbody>
         </table>
       </div>

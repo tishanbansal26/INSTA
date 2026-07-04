@@ -1,6 +1,10 @@
 import type { Request, Response, NextFunction } from "express";
 import { apiResponse } from "../../shared/responses/apiResponse";
 import { paymentService } from "./service";
+import Razorpay from "razorpay";
+import crypto from "crypto";
+import { AppError } from "../../shared/errors/AppError";
+import { notificationService } from "../../shared/services/NotificationService";
 
 export const paymentController = {
   create: async (req: Request, res: Response, next: NextFunction) => {
@@ -83,6 +87,69 @@ export const paymentController = {
       res.status(200).json(apiResponse(true, "Pending payments fetched successfully", result));
     } catch (error) {
       next(error);
+    }
+  },
+
+  createOrder: async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      if (!req.user?.id) throw new Error("Unauthorized");
+      const { amount, currency = "INR", receipt } = req.body;
+      
+      const razorpay = new Razorpay({
+        key_id: process.env.RAZORPAY_KEY_ID || 'rzp_test_dummykey123',
+        key_secret: process.env.RAZORPAY_KEY_SECRET || 'dummysecret456'
+      });
+
+      const options = {
+        amount: amount * 100, // amount in smallest currency unit (paise)
+        currency,
+        receipt
+      };
+
+      const order = await razorpay.orders.create(options);
+      res.status(200).json(apiResponse(true, "Order created successfully", order));
+    } catch (error) {
+      console.error("Razorpay Order Error:", error);
+      next(new AppError("Failed to create payment order", 500));
+    }
+  },
+
+  verifyPayment: async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      if (!req.user?.id) throw new Error("Unauthorized");
+      const { razorpay_order_id, razorpay_payment_id, razorpay_signature, paymentId } = req.body;
+
+      const secret = process.env.RAZORPAY_KEY_SECRET || 'dummysecret456';
+      
+      const generated_signature = crypto
+        .createHmac('sha256', secret)
+        .update(razorpay_order_id + "|" + razorpay_payment_id)
+        .digest('hex');
+
+      if (generated_signature === razorpay_signature) {
+        // Payment is successful
+        const updatedPayment = await paymentService.update(paymentId, {
+          paymentStatus: "SUCCESS",
+          transactionId: razorpay_payment_id,
+          paymentDate: new Date()
+        }, req.user.id);
+        
+        // Trigger notification event
+        notificationService.notify('payment.received', {
+          amount: updatedPayment.amount,
+          email: req.user.email,
+          phone: "+919999999999", // should come from user profile in reality
+          name: req.user.name,
+          receiptUrl: `https://api.insureflow.com/receipts/${updatedPayment.id}`
+        });
+
+        res.status(200).json(apiResponse(true, "Payment verified successfully", updatedPayment));
+      } else {
+        res.status(400).json(apiResponse(false, "Invalid payment signature", null, 400));
+      }
+    } catch (error) {
+      console.error("Razorpay Verify Error:", error);
+      next(new AppError("Failed to verify payment", 500));
     }
   }
 };

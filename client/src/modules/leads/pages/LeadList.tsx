@@ -1,16 +1,16 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { apiClient as api } from '../../../services/apiClient';
 import { Button } from '../../../components/ui/button';
 import { Users, Plus } from 'lucide-react';
+import { useLeads } from '@/hooks/useLeads';
+import { SkeletonLoader } from '@/components/shared/SkeletonLoader';
+import { ErrorState } from '@/components/shared/ErrorState';
+import { EmptyState } from '@/components/shared/EmptyState';
 
 export default function LeadList() {
-  const [leads, setLeads] = useState<any[]>([]);
+  const [page, setPage] = useState(1);
+  const { data, isLoading, isError, refetch } = useLeads({ page, limit: 10 });
   const navigate = useNavigate();
-
-  useEffect(() => {
-    api.get('/leads').then(res => setLeads(res.data));
-  }, []);
 
   return (
     <div className="space-y-6">
@@ -37,32 +37,52 @@ export default function LeadList() {
             </tr>
           </thead>
           <tbody className="bg-white divide-y divide-gray-200">
-            {leads.map((lead: any) => (
-              <tr key={lead.id} className="hover:bg-gray-50 transition-colors">
-                <td className="px-6 py-4 whitespace-nowrap">
-                  <div className="font-medium text-gray-900">{lead.name}</div>
-                  <div className="text-sm text-gray-500">{lead.mobile}</div>
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap">
-                  <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full 
-                    ${lead.status === 'WON' ? 'bg-green-100 text-green-800' : 
-                      lead.status === 'NEW' ? 'bg-blue-100 text-blue-800' : 'bg-gray-100 text-gray-800'}`}>
-                    {lead.status}
-                  </span>
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                  {lead.priority}
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                  {lead.source}
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                  <Button variant="outline" size="sm" onClick={() => navigate(`/leads/${lead.id}`)}>
-                    View CRM
-                  </Button>
+            {isLoading ? (
+              <tr>
+                <td colSpan={5} className="py-12">
+                  <SkeletonLoader text="Loading leads..." />
                 </td>
               </tr>
-            ))}
+            ) : isError ? (
+              <tr>
+                <td colSpan={5} className="py-12">
+                  <ErrorState title="Failed to load leads" onRetry={refetch} />
+                </td>
+              </tr>
+            ) : data?.items.length === 0 ? (
+              <tr>
+                <td colSpan={5} className="py-12">
+                  <EmptyState title="No leads found" description="Create a new lead to get started." />
+                </td>
+              </tr>
+            ) : (
+              data?.items.map((lead: any) => (
+                <tr key={lead.id} className="hover:bg-gray-50 transition-colors">
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    <div className="font-medium text-gray-900">{lead.name}</div>
+                    <div className="text-sm text-gray-500">{lead.mobile}</div>
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full 
+                      ${lead.status === 'WON' ? 'bg-green-100 text-green-800' : 
+                        lead.status === 'NEW' ? 'bg-blue-100 text-blue-800' : 'bg-gray-100 text-gray-800'}`}>
+                      {lead.status}
+                    </span>
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                    {lead.priority}
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                    {lead.source}
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                    <Button variant="outline" size="sm" onClick={() => navigate(`/leads/${lead.id}`)}>
+                      View CRM
+                    </Button>
+                  </td>
+                </tr>
+              ))
+            )}
           </tbody>
         </table>
       </div>

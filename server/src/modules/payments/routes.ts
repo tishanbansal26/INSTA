@@ -16,4 +16,7 @@ router.get("/:id", authenticate, paymentController.getById);
 router.patch("/:id", authenticate, authorize("Payment.Update"), validate(updatePaymentSchema), paymentController.update);
 router.delete("/:id", authenticate, authorize("Payment.Delete"), paymentController.remove);
 
+router.post("/razorpay/create-order", authenticate, paymentController.createOrder);
+router.post("/razorpay/verify", authenticate, paymentController.verifyPayment);
+
 export default router;

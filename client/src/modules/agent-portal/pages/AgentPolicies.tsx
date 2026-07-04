@@ -5,20 +5,16 @@ import {
   Filter,
   Download,
   Clock,
-  RotateCw,
-  MoreVertical,
-  Activity
-} from 'lucide-react';
-
-const MOCK_POLICIES = [
-  { id: 1, policyNo: 'HDF-8832-1102', client: 'Vikram Singh', product: 'Optima Secure', type: 'Health', status: 'Expiring Soon', premium: '₹14,500', expiry: '7 Days Left' },
-  { id: 2, policyNo: 'ICI-9922-3344', client: 'Neha Gupta', product: 'iProtect Smart', type: 'Term', status: 'Active', premium: '₹12,500', expiry: '11 Months' },
-  { id: 3, policyNo: 'STA-5544-2211', client: 'Ravi Desai', product: 'Comprehensive', type: 'Health', status: 'Pending', premium: '₹22,000', expiry: 'Awaiting Medicals' },
-  { id: 4, policyNo: 'TAT-1122-9988', client: 'Sanjay Kumar', product: 'Motor Insurance', type: 'Motor', status: 'Recently Issued', premium: '₹8,500', expiry: '364 Days Left' },
-];
+import { FileText, Search, Filter, Download, Eye, Plus } from 'lucide-react';
+import { usePolicies } from '@/hooks/usePolicies';
+import { SkeletonLoader } from '@/components/shared/SkeletonLoader';
+import { ErrorState } from '@/components/shared/ErrorState';
+import { format } from 'date-fns';
 
 export const AgentPolicies = () => {
   const [activeTab, setActiveTab] = useState('All');
+  const { data, isLoading, isError, refetch } = usePolicies({ limit: 50 });
+  const policies = data?.items || [];
 
   const tabs = ['All', 'Active', 'Pending', 'Expiring Soon', 'Recently Issued'];
 
@@ -56,46 +52,6 @@ export const AgentPolicies = () => {
       </div>
 
       {/* Policy List */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        {MOCK_POLICIES.filter(p => activeTab === 'All' || p.status === activeTab).map(policy => (
-          <div key={policy.id} className="bg-surface border border-border rounded-xl p-5 hover:border-primary/50 transition-all">
-            <div className="flex justify-between items-start mb-4">
-              <div className="flex items-center gap-3">
-                <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${
-                  policy.type === 'Health' ? 'bg-red-500/10 text-red-500' :
-                  policy.type === 'Term' ? 'bg-blue-500/10 text-blue-500' :
-                  'bg-orange-500/10 text-orange-500'
-                }`}>
-                  <Shield className="w-5 h-5" />
-                </div>
-                <div>
-                  <h3 className="font-bold text-text">{policy.product}</h3>
-                  <p className="text-xs text-text-secondary">{policy.policyNo} • {policy.client}</p>
-                </div>
-              </div>
-              <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
-                policy.status === 'Expiring Soon' ? 'bg-orange-500/10 text-orange-500' :
-                policy.status === 'Pending' ? 'bg-yellow-500/10 text-yellow-500' :
-                policy.status === 'Recently Issued' ? 'bg-purple-500/10 text-purple-500' :
-                'bg-green-500/10 text-green-500'
-              }`}>
-                {policy.status}
-              </span>
-            </div>
-            
-            <div className="flex justify-between items-center py-4 border-y border-border mb-4">
-              <div>
-                <p className="text-xs text-text-secondary">Premium</p>
-                <p className="font-bold text-text">{policy.premium}</p>
-              </div>
-              <div className="text-right">
-                <p className="text-xs text-text-secondary">Expiry</p>
-                <p className={`font-bold ${policy.status === 'Expiring Soon' ? 'text-orange-500' : 'text-text'}`}>{policy.expiry}</p>
-              </div>
-            </div>
-
-            <div className="flex justify-between items-center">
-              <div className="flex gap-2">
                 <button className="flex items-center gap-1.5 px-3 py-1.5 bg-background border border-border rounded-lg text-xs font-bold text-text hover:border-primary transition-colors">
                   <Download className="w-3 h-3" /> PDF
                 </button>

@@ -1,11 +1,11 @@
-import { ShieldAlert, Search, Filter, Phone, MessageCircle } from 'lucide-react';
-
-const MOCK_CLAIMS = [
-  { id: 1, claimNo: 'CLM-2026-991', client: 'Priya Singh', policyNo: 'HDF-8832-1102', type: 'Health', amount: '₹1,50,000', status: 'Under Review', date: '12 Nov 2026' },
-  { id: 2, claimNo: 'CLM-2026-882', client: 'Anil Kapoor', policyNo: 'TAT-1122-9988', type: 'Motor', amount: '₹45,000', status: 'Approved', date: '05 Nov 2026' },
-];
+import { ShieldAlert, Search, Filter, Phone, MessageCircle, Eye } from 'lucide-react';
+import { useClaims } from '@/hooks/useClaims';
+import { SkeletonLoader } from '@/components/shared/SkeletonLoader';
+import { ErrorState } from '@/components/shared/ErrorState';
 
 export const AgentClaims = () => {
+  const { data, isLoading, isError, refetch } = useClaims({ limit: 50 });
+  const claims = data?.items || [];
   return (
     <div className="space-y-6">
       
@@ -32,41 +32,46 @@ export const AgentClaims = () => {
               <th className="p-4 font-bold">Claim Details</th>
               <th className="p-4 font-bold">Policy & Type</th>
               <th className="p-4 font-bold">Amount</th>
+              <th className="p-4 font-bold">Date</th>
               <th className="p-4 font-bold">Status</th>
               <th className="p-4 font-bold text-right">Assist Client</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-border">
-            {MOCK_CLAIMS.map(claim => (
-              <tr key={claim.id} className="hover:bg-surface-hover transition-colors">
+          {isLoading ? (
+            <tr><td colSpan={6} className="p-8"><SkeletonLoader text="Loading claims..." /></td></tr>
+          ) : isError ? (
+            <tr><td colSpan={6} className="p-8"><ErrorState title="Failed to load claims" onRetry={refetch} /></td></tr>
+          ) : claims.length === 0 ? (
+            <tr><td colSpan={6} className="p-8 text-center text-text-secondary">No claims found.</td></tr>
+          ) : (
+            claims.map(claim => (
+              <tr key={claim.id} className="hover:bg-surface-hover cursor-pointer transition-colors">
                 <td className="p-4">
-                  <p className="font-bold text-text">{claim.client}</p>
-                  <p className="text-xs text-text-secondary">{claim.claimNo} • {claim.date}</p>
+                  <p className="font-bold text-text">{claim.claimNumber}</p>
+                  <p className="text-xs text-text-secondary">{claim.claimType}</p>
                 </td>
                 <td className="p-4">
-                  <p className="font-medium text-text">{claim.policyNo}</p>
-                  <p className="text-xs text-text-secondary">{claim.type}</p>
+                  <p className="font-bold text-text">{claim.client?.firstName} {claim.client?.lastName}</p>
+                  <p className="text-xs text-text-secondary">{claim.policy?.policyNumber}</p>
                 </td>
-                <td className="p-4 font-bold text-text">{claim.amount}</td>
+                <td className="p-4 font-mono font-bold text-text">₹{claim.claimAmount}</td>
+                <td className="p-4 text-text-secondary">{new Date(claim.raisedDate).toLocaleDateString()}</td>
                 <td className="p-4">
-                  <span className={`text-xs font-bold px-2.5 py-1 rounded-full ${
-                    claim.status === 'Approved' ? 'bg-green-500/10 text-green-500' : 'bg-orange-500/10 text-orange-500'
+                  <span className={`px-2.5 py-1 rounded-lg font-bold text-xs ${
+                    claim.status === 'APPROVED' || claim.status === 'SETTLED' ? 'bg-green-500/10 text-green-500' :
+                    claim.status === 'REJECTED' ? 'bg-red-500/10 text-red-500' :
+                    'bg-blue-500/10 text-blue-500'
                   }`}>
                     {claim.status}
                   </span>
                 </td>
-                <td className="p-4">
-                  <div className="flex justify-end gap-2">
-                    <button className="w-8 h-8 rounded-lg bg-green-500/10 text-green-500 flex items-center justify-center hover:bg-green-500 hover:text-white transition-colors">
-                      <MessageCircle className="w-4 h-4" />
-                    </button>
-                    <button className="w-8 h-8 rounded-lg bg-primary/10 text-primary flex items-center justify-center hover:bg-primary hover:text-white transition-colors">
-                      <Phone className="w-4 h-4" />
-                    </button>
-                  </div>
+                <td className="p-4 text-right">
+                  <button className="w-8 h-8 rounded-lg bg-surface border border-border text-text flex items-center justify-center hover:bg-primary hover:text-white hover:border-primary transition-colors ml-auto">
+                    <Eye className="w-4 h-4" />
+                  </button>
                 </td>
               </tr>
-            ))}
           </tbody>
         </table>
       </div>

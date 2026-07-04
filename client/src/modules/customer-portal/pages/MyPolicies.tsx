@@ -10,8 +10,11 @@ import {
   CheckCircle2
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
-
-const POLICIES = [
+import { usePolicies } from '@/hooks/usePolicies';
+import { SkeletonLoader } from '@/components/shared/SkeletonLoader';
+import { ErrorState } from '@/components/shared/ErrorState';
+import { EmptyState } from '@/components/shared/EmptyState';
+import { format } from 'date-fns';
   {
     id: 'POL-9928134',
     name: 'Comprehensive Health Plan',
@@ -54,6 +57,8 @@ const POLICIES = [
 ];
 
 export const MyPolicies = () => {
+  const { data, isLoading, isError, refetch } = usePolicies({ limit: 50 });
+  
   return (
     <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
       
@@ -73,8 +78,15 @@ export const MyPolicies = () => {
       </div>
 
       <div className="grid grid-cols-1 gap-6">
-        {POLICIES.map(policy => (
-          <div key={policy.id} className="bg-surface border border-border rounded-xl overflow-hidden hover:border-primary/30 transition-colors">
+        {isLoading ? (
+          <SkeletonLoader text="Loading your policies..." />
+        ) : isError ? (
+          <ErrorState title="Failed to load policies" onRetry={refetch} />
+        ) : data?.items?.length === 0 ? (
+          <EmptyState title="No active policies" description="You do not have any active insurance policies yet." />
+        ) : (
+          data?.items?.map((policy: any) => (
+            <div key={policy.id} className="bg-surface border border-border rounded-xl overflow-hidden hover:border-primary/30 transition-colors">
             
             {/* Header */}
             <div className={`p-6 border-b border-border flex flex-col md:flex-row justify-between items-start md:items-center gap-4 ${
@@ -88,7 +100,7 @@ export const MyPolicies = () => {
                 </div>
                 <div>
                   <div className="flex items-center gap-3">
-                    <h2 className="text-xl font-bold text-text">{policy.name}</h2>
+                    <h2 className="text-xl font-bold text-text">{policy.plan?.name || 'Insurance Plan'}</h2>
                     {policy.status === 'ACTIVE' ? (
                       <span className="px-2.5 py-1 bg-green-500/10 text-green-500 text-xs font-bold rounded-full border border-green-500/20 flex items-center gap-1">
                         <CheckCircle2 className="w-3 h-3" /> ACTIVE
@@ -99,7 +111,7 @@ export const MyPolicies = () => {
                       </span>
                     )}
                   </div>
-                  <p className="text-sm text-text-secondary mt-1">{policy.id} • {policy.provider} • {policy.type}</p>
+                  <p className="text-sm text-text-secondary mt-1">{policy.policyNumber} • {policy.company?.name || 'Provider'} • {policy.plan?.category || 'Individual'}</p>
                 </div>
               </div>
               <div className="flex gap-2 w-full md:w-auto">
@@ -122,19 +134,21 @@ export const MyPolicies = () => {
             <div className="p-6 grid grid-cols-2 md:grid-cols-4 gap-6 bg-background">
               <div>
                 <span className="text-sm text-text-secondary block mb-1">Sum Insured</span>
-                <p className="text-lg font-bold text-text">{policy.sumInsured}</p>
+                <p className="text-lg font-bold text-text">₹{policy.sumInsured || 0}</p>
               </div>
               <div>
-                <span className="text-sm text-text-secondary block mb-1">Premium ({policy.frequency})</span>
-                <p className="text-lg font-bold text-text">{policy.premium}</p>
+                <span className="text-sm text-text-secondary block mb-1">Premium (Annually)</span>
+                <p className="text-lg font-bold text-text">₹{policy.premiumAmount || 0}</p>
               </div>
               <div>
                 <span className="text-sm text-text-secondary block mb-1">Renewal Date</span>
-                <p className={`text-lg font-bold ${policy.status === 'ACTIVE' ? 'text-text' : 'text-red-500'}`}>{policy.renewalDate}</p>
+                <p className={`text-lg font-bold ${policy.status === 'ACTIVE' ? 'text-text' : 'text-red-500'}`}>
+                  {policy.expiryDate ? format(new Date(policy.expiryDate), 'dd MMM yyyy') : 'N/A'}
+                </p>
               </div>
               <div>
                 <span className="text-sm text-text-secondary block mb-1">Members Covered</span>
-                <p className="text-sm font-medium text-text mt-1">{policy.members.join(', ')}</p>
+                <p className="text-sm font-medium text-text mt-1">{policy.members?.join(', ') || 'Self'}</p>
               </div>
             </div>
 
@@ -142,7 +156,7 @@ export const MyPolicies = () => {
             <div className="px-6 pb-6 bg-background">
               <h4 className="text-sm font-bold text-text mb-3 uppercase tracking-wider text-text-secondary">Key Benefits included</h4>
               <div className="flex flex-wrap gap-2">
-                {policy.benefits.map((b, idx) => (
+                {(policy.benefits || ['Standard Coverage']).map((b: string, idx: number) => (
                   <span key={idx} className="px-3 py-1.5 bg-surface border border-border rounded-lg text-sm text-text flex items-center gap-2">
                     <CheckCircle2 className="w-4 h-4 text-primary" /> {b}
                   </span>
@@ -159,11 +173,11 @@ export const MyPolicies = () => {
             )}
             
             {/* Upcoming Renewal Alert */}
-            {policy.status === 'ACTIVE' && policy.id === 'POL-9928134' && (
+            {policy.status === 'ACTIVE' && (
               <div className="px-6 py-3 bg-orange-500/10 border-t border-orange-500/20 flex items-center justify-between">
                 <div className="flex items-center gap-3">
                   <CalendarClock className="w-5 h-5 text-orange-500 shrink-0" />
-                  <p className="text-sm text-orange-700 dark:text-orange-400 font-medium">Renewal due in 14 days. Ensure your AutoPay is active or renew manually.</p>
+                  <p className="text-sm text-orange-700 dark:text-orange-400 font-medium">Renewal approaching. Ensure your AutoPay is active or renew manually.</p>
                 </div>
                 <Link to="/portal/wallet" className="text-sm font-bold text-orange-600 dark:text-orange-400 hover:underline flex items-center gap-1">
                   Pay Now <ArrowRight className="w-4 h-4" />
@@ -172,7 +186,7 @@ export const MyPolicies = () => {
             )}
 
           </div>
-        ))}
+        )))}
       </div>
     </div>
   );

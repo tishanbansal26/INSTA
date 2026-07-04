@@ -2,15 +2,15 @@ import { useState } from 'react';
 import { Plus, Search, Filter, Edit, Trash, Eye } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-
-const MOCK_CLIENTS = [
-  { id: '1', firstName: 'Rahul', lastName: 'Sharma', phone: '+91 9876543210', email: 'rahul.s@example.com', policies: 3, status: 'Active' },
-  { id: '2', firstName: 'Priya', lastName: 'Patel', phone: '+91 9876543211', email: 'priya.p@example.com', policies: 1, status: 'Active' },
-  { id: '3', firstName: 'Anil', lastName: 'Kumar', phone: '+91 9876543212', email: 'anil.k@example.com', policies: 0, status: 'Inactive' },
-];
+import { useClients } from '@/hooks/useClients';
+import { SkeletonLoader } from '@/components/shared/SkeletonLoader';
+import { ErrorState } from '@/components/shared/ErrorState';
+import { EmptyState } from '@/components/shared/EmptyState';
 
 export function ClientList() {
   const [searchTerm, setSearchTerm] = useState('');
+  const [page, setPage] = useState(1);
+  const { data, isLoading, isError, refetch } = useClients({ page, limit: 10, search: searchTerm });
 
   return (
     <div className="space-y-6">
@@ -56,49 +56,87 @@ export function ClientList() {
               </tr>
             </thead>
             <tbody className="divide-y divide-border">
-              {MOCK_CLIENTS.map((client) => (
-                <tr key={client.id} className="hover:bg-secondary/30 transition-colors">
-                  <td className="px-6 py-4">
-                    <div className="font-medium text-text">{client.firstName} {client.lastName}</div>
-                    <div className="text-xs text-muted-foreground">{client.id}</div>
-                  </td>
-                  <td className="px-6 py-4">
-                    <div className="text-text">{client.phone}</div>
-                    <div className="text-xs text-muted-foreground">{client.email}</div>
-                  </td>
-                  <td className="px-6 py-4 text-text">{client.policies}</td>
-                  <td className="px-6 py-4">
-                    <span className={"px-2.5 py-1 rounded-full text-xs font-medium " + (client.status === 'Active' ? 'bg-success/10 text-success' : 'bg-muted text-muted-foreground')}>
-                      {client.status}
-                    </span>
-                  </td>
-                  <td className="px-6 py-4 text-right">
-                    <div className="flex items-center justify-end space-x-2">
-                      <Button variant="ghost" size="icon" className="h-8 w-8 text-primary hover:text-primary hover:bg-primary/10">
-                        <Eye className="h-4 w-4" />
-                      </Button>
-                      <Button variant="ghost" size="icon" className="h-8 w-8 text-warning hover:text-warning hover:bg-warning/10">
-                        <Edit className="h-4 w-4" />
-                      </Button>
-                      <Button variant="ghost" size="icon" className="h-8 w-8 text-danger hover:text-danger hover:bg-danger/10">
-                        <Trash className="h-4 w-4" />
-                      </Button>
-                    </div>
+              {isLoading ? (
+                <tr>
+                  <td colSpan={5} className="py-12">
+                    <SkeletonLoader text="Loading clients..." />
                   </td>
                 </tr>
-              ))}
+              ) : isError ? (
+                <tr>
+                  <td colSpan={5} className="py-12">
+                    <ErrorState title="Failed to load clients" onRetry={refetch} />
+                  </td>
+                </tr>
+              ) : data?.items.length === 0 ? (
+                <tr>
+                  <td colSpan={5} className="py-12">
+                    <EmptyState title="No clients found" description="Try adjusting your search or add a new client." />
+                  </td>
+                </tr>
+              ) : (
+                data?.items.map((client) => (
+                  <tr key={client.id} className="hover:bg-secondary/30 transition-colors">
+                    <td className="px-6 py-4">
+                      <div className="font-medium text-text">{client.firstName} {client.lastName}</div>
+                      <div className="text-xs text-muted-foreground truncate max-w-[120px]">{client.id}</div>
+                    </td>
+                    <td className="px-6 py-4">
+                      <div className="text-text truncate max-w-[150px]">{client.phone || '-'}</div>
+                      <div className="text-xs text-muted-foreground truncate max-w-[150px]">{client.email}</div>
+                    </td>
+                    <td className="px-6 py-4 text-text">{client._count?.policies || 0}</td>
+                    <td className="px-6 py-4">
+                      <span className={"px-2.5 py-1 rounded-full text-xs font-medium " + (client.isActive ? 'bg-success/10 text-success' : 'bg-muted text-muted-foreground')}>
+                        {client.isActive ? 'Active' : 'Inactive'}
+                      </span>
+                    </td>
+                    <td className="px-6 py-4 text-right">
+                      <div className="flex items-center justify-end space-x-2">
+                        <Button variant="ghost" size="icon" className="h-8 w-8 text-primary hover:text-primary hover:bg-primary/10">
+                          <Eye className="h-4 w-4" />
+                        </Button>
+                        <Button variant="ghost" size="icon" className="h-8 w-8 text-warning hover:text-warning hover:bg-warning/10">
+                          <Edit className="h-4 w-4" />
+                        </Button>
+                        <Button variant="ghost" size="icon" className="h-8 w-8 text-danger hover:text-danger hover:bg-danger/10">
+                          <Trash className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    </td>
+                  </tr>
+                ))
+              )}
             </tbody>
           </table>
         </div>
 
         {/* Pagination */}
-        <div className="flex justify-between items-center pt-4">
-          <p className="text-sm text-muted-foreground">Showing 1 to 3 of 3 entries</p>
-          <div className="flex space-x-2">
-            <Button variant="outline" size="sm" disabled className="border-border">Previous</Button>
-            <Button variant="outline" size="sm" className="border-border">Next</Button>
+        {data && data.totalPages > 1 && (
+          <div className="flex justify-between items-center pt-4">
+            <p className="text-sm text-muted-foreground">Showing page {data.page} of {data.totalPages} ({data.total} total)</p>
+            <div className="flex space-x-2">
+              <Button 
+                variant="outline" 
+                size="sm" 
+                disabled={data.page === 1}
+                onClick={() => setPage(p => Math.max(1, p - 1))}
+                className="border-border"
+              >
+                Previous
+              </Button>
+              <Button 
+                variant="outline" 
+                size="sm" 
+                disabled={data.page === data.totalPages}
+                onClick={() => setPage(p => Math.min(data.totalPages, p + 1))}
+                className="border-border"
+              >
+                Next
+              </Button>
+            </div>
           </div>
-        </div>
+        )}
       </div>
     </div>
   );

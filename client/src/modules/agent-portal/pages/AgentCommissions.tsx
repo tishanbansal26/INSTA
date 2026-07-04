@@ -2,20 +2,21 @@ import {
   IndianRupee, 
   TrendingUp, 
   Download, 
+  Eye, 
   Calendar,
   CheckCircle2,
   Clock,
   BarChart3,
   PieChart
 } from 'lucide-react';
-
-const MOCK_COMMISSIONS = [
-  { id: 1, policyNo: 'HDF-8832-1102', client: 'Vikram Singh', product: 'Optima Secure', premium: '₹14,500', rate: '15%', amount: '₹2,175', status: 'Paid', date: '01 Nov, 2026' },
-  { id: 2, policyNo: 'ICI-9922-3344', client: 'Neha Gupta', product: 'iProtect Smart', premium: '₹12,500', rate: '25%', amount: '₹3,125', status: 'Paid', date: '28 Oct, 2026' },
-  { id: 3, policyNo: 'STA-5544-2211', client: 'Ravi Desai', product: 'Comprehensive', premium: '₹22,000', rate: '15%', amount: '₹3,300', status: 'Pending', date: '05 Nov, 2026' },
-];
+import { useCommissions } from '@/hooks/useCommissions';
+import { SkeletonLoader } from '@/components/shared/SkeletonLoader';
+import { ErrorState } from '@/components/shared/ErrorState';
+import { format } from 'date-fns';
 
 export const AgentCommissions = () => {
+  const { data, isLoading, isError, refetch } = useCommissions({ limit: 50 });
+  const commissions = data?.items || [];
   return (
     <div className="space-y-6">
       
@@ -95,33 +96,49 @@ export const AgentCommissions = () => {
               <thead className="bg-surface-hover text-text-secondary border-b border-border">
                 <tr>
                   <th className="p-4 font-bold">Policy & Client</th>
+                  <th className="p-4 font-bold">Product</th>
                   <th className="p-4 font-bold">Premium</th>
                   <th className="p-4 font-bold">Rate</th>
                   <th className="p-4 font-bold">Commission</th>
                   <th className="p-4 font-bold">Status</th>
+                  <th className="p-4 font-bold">Date</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-border">
-                {MOCK_COMMISSIONS.map(comm => (
+              {isLoading ? (
+                <tr><td colSpan={7} className="p-8"><SkeletonLoader text="Loading commissions..." /></td></tr>
+              ) : isError ? (
+                <tr><td colSpan={7} className="p-8"><ErrorState title="Failed to load commissions" onRetry={refetch} /></td></tr>
+              ) : commissions.length === 0 ? (
+                <tr><td colSpan={7} className="p-8 text-center text-text-secondary">No commissions found.</td></tr>
+              ) : (
+                commissions.map(comm => (
                   <tr key={comm.id} className="hover:bg-surface-hover transition-colors">
                     <td className="p-4">
-                      <p className="font-bold text-text">{comm.product}</p>
-                      <p className="text-xs text-text-secondary">{comm.client} • {comm.date}</p>
+                      <p className="font-bold text-text">{comm.policy?.policyNumber}</p>
+                      <p className="text-xs text-text-secondary">{comm.policy?.client?.firstName} {comm.policy?.client?.lastName}</p>
                     </td>
-                    <td className="p-4 font-medium text-text">{comm.premium}</td>
-                    <td className="p-4 text-text-secondary font-medium">{comm.rate}</td>
-                    <td className="p-4 font-black text-primary">{comm.amount}</td>
                     <td className="p-4">
-                      <span className={`flex items-center gap-1.5 text-xs font-bold px-2.5 py-1 rounded-full w-fit ${
-                        comm.status === 'Paid' ? 'bg-green-500/10 text-green-500' : 'bg-orange-500/10 text-orange-500'
+                      <p className="font-medium text-text">Insurance Product</p>
+                      <p className="text-xs text-text-secondary">Health</p>
+                    </td>
+                    <td className="p-4 text-text">₹{comm.totalCommissionAmount}</td>
+                    <td className="p-4 text-text">15%</td>
+                    <td className="p-4 font-bold text-text">₹{comm.totalCommissionAmount}</td>
+                    <td className="p-4">
+                      <span className={`text-xs font-bold px-2.5 py-1 rounded-full ${
+                        comm.status === 'PAID' ? 'bg-green-500/10 text-green-500' : 'bg-orange-500/10 text-orange-500'
                       }`}>
-                        {comm.status === 'Paid' ? <CheckCircle2 className="w-3 h-3" /> : <Clock className="w-3 h-3" />}
                         {comm.status}
                       </span>
                     </td>
+                    <td className="p-4 text-text-secondary">
+                      {format(new Date(comm.createdAt), 'dd MMM yyyy')}
+                    </td>
                   </tr>
-                ))}
-              </tbody>
+                ))
+              )}
+            </tbody>
             </table>
           </div>
         </div>

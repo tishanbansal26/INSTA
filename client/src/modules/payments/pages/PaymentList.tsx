@@ -1,23 +1,25 @@
 import { useState } from 'react';
-import { Search, Filter, Download, CreditCard, Eye, Trash2, Mail } from 'lucide-react';
+import { Search, Filter, Eye, Download, CreditCard, Mail, Trash2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-
-const MOCK_PAYMENTS = [
-  { id: '1', receiptNumber: 'REC-001', policy: 'POL-1001', client: 'Rahul Sharma', amount: '₹14,500', mode: 'UPI', status: 'SUCCESS', date: '01 May 2026' },
-  { id: '2', receiptNumber: 'REC-002', policy: 'POL-1002', client: 'Priya Patel', amount: '₹22,100', mode: 'CARD', status: 'SUCCESS', date: '02 May 2026' },
-  { id: '3', receiptNumber: 'REC-003', policy: 'POL-1003', client: 'Anil Kumar', amount: '₹8,400', mode: 'NET_BANKING', status: 'FAILED', date: '03 May 2026' },
-];
+import { usePayments } from '@/hooks/usePayments';
+import { SkeletonLoader } from '@/components/shared/SkeletonLoader';
+import { ErrorState } from '@/components/shared/ErrorState';
+import { EmptyState } from '@/components/shared/EmptyState';
+import { format } from 'date-fns';
 
 export function PaymentList() {
   const [searchTerm, setSearchTerm] = useState('');
+  const [page, setPage] = useState(1);
+  const { data, isLoading, isError, refetch } = usePayments({ page, limit: 10, search: searchTerm });
   const [selectedRows, setSelectedRows] = useState<string[]>([]);
 
   const toggleSelectAll = () => {
-    if (selectedRows.length === MOCK_PAYMENTS.length) {
+    if (!data?.items) return;
+    if (selectedRows.length === data.items.length) {
       setSelectedRows([]);
     } else {
-      setSelectedRows(MOCK_PAYMENTS.map(p => p.id));
+      setSelectedRows(data.items.map((p: any) => p.id));
     }
   };
 
@@ -86,62 +88,99 @@ export function PaymentList() {
                 <th className="px-6 py-4 font-medium w-10">
                   <input 
                     type="checkbox" 
-                    className="rounded border-gray-300 text-primary focus:ring-primary"
-                    checked={selectedRows.length === MOCK_PAYMENTS.length && MOCK_PAYMENTS.length > 0}
+                    className="rounded border-border"
+                    checked={data?.items?.length ? selectedRows.length === data.items.length : false}
                     onChange={toggleSelectAll}
                   />
                 </th>
                 <th className="px-6 py-4 font-medium">Receipt No.</th>
                 <th className="px-6 py-4 font-medium">Client & Policy</th>
                 <th className="px-6 py-4 font-medium">Amount & Mode</th>
+                <th className="px-6 py-4 font-medium">Date</th>
                 <th className="px-6 py-4 font-medium">Status</th>
                 <th className="px-6 py-4 font-medium text-right">Actions</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-border">
-              {MOCK_PAYMENTS.map((payment) => (
-                <tr key={payment.id} className={`hover:bg-secondary/30 transition-colors ${selectedRows.includes(payment.id) ? 'bg-primary/5' : ''}`}>
-                  <td className="px-6 py-4">
-                    <input 
-                      type="checkbox" 
-                      className="rounded border-gray-300 text-primary focus:ring-primary"
-                      checked={selectedRows.includes(payment.id)}
-                      onChange={() => toggleSelectRow(payment.id)}
-                    />
-                  </td>
-                  <td className="px-6 py-4 font-medium text-text">{payment.receiptNumber}
-                    <div className="text-xs text-muted-foreground">{payment.date}</div>
-                  </td>
-                  <td className="px-6 py-4">
-                    <div className="font-medium text-text">{payment.client}</div>
-                    <div className="text-xs text-muted-foreground">{payment.policy}</div>
-                  </td>
-                  <td className="px-6 py-4">
-                    <div className="font-bold text-text">{payment.amount}</div>
-                    <div className="text-xs text-muted-foreground">{payment.mode}</div>
-                  </td>
-                  <td className="px-6 py-4">
-                    <span className={"px-2.5 py-1 rounded-full text-xs font-medium " + 
-                      (payment.status === 'SUCCESS' ? 'bg-success/10 text-success' : 'bg-danger/10 text-danger')
-                    }>
-                      {payment.status}
-                    </span>
-                  </td>
-                  <td className="px-6 py-4 text-right">
-                    <div className="flex items-center justify-end space-x-2">
-                      <Button variant="ghost" size="icon" className="h-8 w-8 text-primary hover:text-primary hover:bg-primary/10" title="View Details">
-                        <Eye className="h-4 w-4" />
-                      </Button>
-                      <Button variant="ghost" size="icon" className="h-8 w-8 text-text hover:text-text hover:bg-secondary" title="Download Receipt">
-                        <Download className="h-4 w-4" />
-                      </Button>
-                    </div>
-                  </td>
-                </tr>
-              ))}
+              {isLoading ? (
+                <tr><td colSpan={8} className="py-8"><SkeletonLoader text="Loading payments..." /></td></tr>
+              ) : isError ? (
+                <tr><td colSpan={8} className="py-8"><ErrorState title="Failed to load payments" onRetry={refetch} /></td></tr>
+              ) : data?.items.length === 0 ? (
+                <tr><td colSpan={8} className="py-8"><EmptyState title="No payments found" description="Try adjusting your search criteria." /></td></tr>
+              ) : (
+                data?.items.map((payment: any) => (
+                  <tr key={payment.id} className="hover:bg-secondary/30 transition-colors">
+                    <td className="px-6 py-4">
+                      <input 
+                        type="checkbox" 
+                        className="rounded border-border"
+                        checked={selectedRows.includes(payment.id)}
+                        onChange={() => toggleSelectRow(payment.id)}
+                      />
+                    </td>
+                    <td className="px-6 py-4 font-medium text-text">{payment.receiptNumber}</td>
+                    <td className="px-6 py-4">
+                      <div className="font-medium text-text">{payment.policy?.client?.firstName} {payment.policy?.client?.lastName}</div>
+                      <div className="text-xs text-muted-foreground">{payment.policy?.policyNumber}</div>
+                    </td>
+                    <td className="px-6 py-4">
+                      <div className="font-mono text-text">₹{payment.amount}</div>
+                      <div className="text-xs text-muted-foreground">{payment.paymentMode}</div>
+                    </td>
+                    <td className="px-6 py-4 text-text">{format(new Date(payment.createdAt), 'dd MMM yyyy')}</td>
+                    <td className="px-6 py-4">
+                      <span className={"px-2.5 py-1 rounded-full text-xs font-medium " + 
+                        (payment.paymentStatus === 'SUCCESS' ? 'bg-success/10 text-success' : 
+                         payment.paymentStatus === 'FAILED' ? 'bg-danger/10 text-danger' : 
+                         'bg-warning/10 text-warning')
+                      }>
+                        {payment.paymentStatus}
+                      </span>
+                    </td>
+                    <td className="px-6 py-4 text-right">
+                      <div className="flex items-center justify-end space-x-2">
+                        <Button variant="ghost" size="icon" className="h-8 w-8 text-primary hover:text-primary hover:bg-primary/10" title="View Details">
+                          <Eye className="h-4 w-4" />
+                        </Button>
+                        <Button variant="ghost" size="icon" className="h-8 w-8 text-text hover:text-text hover:bg-secondary" title="Download Receipt">
+                          <Download className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    </td>
+                  </tr>
+                ))
+              )}
             </tbody>
           </table>
         </div>
+
+        {/* Pagination */}
+        {data && data.totalPages > 1 && (
+          <div className="flex justify-between items-center pt-4">
+            <p className="text-sm text-muted-foreground">Showing page {data.page} of {data.totalPages} ({data.total} total)</p>
+            <div className="flex space-x-2">
+              <Button 
+                variant="outline" 
+                size="sm" 
+                disabled={data.page === 1}
+                onClick={() => setPage(p => Math.max(1, p - 1))}
+                className="border-border"
+              >
+                Previous
+              </Button>
+              <Button 
+                variant="outline" 
+                size="sm" 
+                disabled={data.page === data.totalPages}
+                onClick={() => setPage(p => Math.min(data.totalPages, p + 1))}
+                className="border-border"
+              >
+                Next
+              </Button>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
