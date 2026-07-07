@@ -1,4 +1,5 @@
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { SpeedInsights } from "@vercel/speed-insights/react";
 import { Home } from './pages/Home';
 import { SEOLanding } from './pages/SEOLanding';
 import { Calculator } from './pages/Calculator';
@@ -18,6 +19,7 @@ function App() {
         <AIAdvisor />
       </Router>
       </ThemeProvider>
+      <SpeedInsights />
     </>
   );
 }

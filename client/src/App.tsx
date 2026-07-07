@@ -1,4 +1,5 @@
 import { Suspense, lazy } from 'react';
+import { SpeedInsights } from "@vercel/speed-insights/react";
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { ProtectedRoute, GuestRoute, CustomerRoute, AgentRoute } from './routes/RouteWrappers';
 import { MainLayout } from './components/layout/MainLayout';
@@ -154,6 +155,7 @@ export default function App() {
           <Route path="*" element={<div className="text-text p-10 text-center">404 - Not Found</div>} />
         </Routes>
       </Suspense>
+      <SpeedInsights />
     </BrowserRouter>
     </ThemeProvider>
   );
