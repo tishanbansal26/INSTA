@@ -26,21 +26,21 @@ export interface PaymentListResponse {
 export const paymentsApi = {
   list: async (params?: { page?: number; limit?: number; search?: string }): Promise<PaymentListResponse> => {
     const response = await apiClient.get('/payments', { params });
-    return response.data.data;
+    return response.data;
   },
   
   getById: async (id: string): Promise<Payment> => {
     const response = await apiClient.get(`/payments/${id}`);
-    return response.data.data;
+    return response.data;
   },
   
   createOrder: async (data: { amount: number; receipt: string }) => {
     const response = await apiClient.post('/payments/razorpay/create-order', data);
-    return response.data.data;
+    return response.data;
   },
 
   verifyPayment: async (data: { razorpay_order_id: string; razorpay_payment_id: string; razorpay_signature: string; paymentId: string }) => {
     const response = await apiClient.post('/payments/razorpay/verify', data);
-    return response.data.data;
+    return response.data;
   }
 };

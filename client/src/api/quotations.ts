@@ -24,11 +24,11 @@ export interface QuotationListResponse {
 export const quotationsApi = {
   list: async (params?: { page?: number; limit?: number; search?: string }): Promise<QuotationListResponse> => {
     const response = await apiClient.get('/quotations', { params });
-    return response.data.data;
+    return response.data;
   },
   
   getById: async (id: string): Promise<Quotation> => {
     const response = await apiClient.get(`/quotations/${id}`);
-    return response.data.data;
+    return response.data;
   },
 };

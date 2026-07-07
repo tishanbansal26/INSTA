@@ -20,10 +20,10 @@ export interface Activity {
 export const dashboardApi = {
   getOverview: async (): Promise<DashboardOverview> => {
     const response = await apiClient.get('/dashboard/overview');
-    return response.data.data;
+    return response.data;
   },
   getRecentActivities: async (): Promise<Activity[]> => {
     const response = await apiClient.get('/dashboard/recent-activities');
-    return response.data.data;
+    return response.data;
   }
 };
