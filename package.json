@@ -9,7 +9,7 @@
     "packages/*"
   ],
   "scripts": {
-    "build": "cd website && npm install && npm run build"
+    "build": "npm run build -w website"
   },
   "engines": {
     "node": "22.x"
