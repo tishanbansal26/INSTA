@@ -54,12 +54,38 @@ export const leadsController = {
 
   create: async (req: Request, res: Response, next: NextFunction) => {
     try {
+      let createdById = req.user?.id;
+      if (!createdById) {
+        const defaultUser = await prisma.user.findFirst({
+          where: { role: { in: ["ADMIN", "AGENT"] } }
+        });
+        createdById = defaultUser?.id || "";
+      }
+
       const lead = await prisma.lead.create({
         data: {
-          ...req.body,
-          createdById: req.user?.id || ""
+          name: req.body.name,
+          email: req.body.email,
+          mobile: req.body.mobile,
+          source: req.body.source || "Website Calculator",
+          status: req.body.status || "NEW",
+          priority: req.body.priority || "MEDIUM",
+          createdById
         }
       });
+
+      // Automatically create a follow-up task for the agent
+      await prisma.task.create({
+        data: {
+          title: `Follow up: New Lead - ${lead.name}`,
+          description: `A new lead has been generated from ${lead.source || 'Website Calculator'}.\nMobile: ${lead.mobile}\nEmail: ${lead.email || 'N/A'}`,
+          status: 'PENDING',
+          priority: 'HIGH',
+          createdById,
+          assignedToId: createdById
+        }
+      });
+
       await AuditService.log({
         req,
         tableName: "Lead",

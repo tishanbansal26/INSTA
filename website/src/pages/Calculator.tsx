@@ -240,7 +240,7 @@ export const Calculator = () => {
   const submitLead = async () => {
     setIsLoading(true);
     try {
-      const apiUrl = import.meta.env.VITE_API_URL || 'https://insureflow-erp.vercel.app/api/v1';
+      const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000/api/v1';
       
       const notes = formData.insuranceType === 'Health' 
         ? `Family: ${formData.familyMembers.join(', ')} | Age: ${formData.age} | City: ${formData.city} | Pre-existing: ${formData.preExisting ? 'Yes' : 'No'}`
@@ -252,14 +252,6 @@ export const Calculator = () => {
         mobile: formData.mobile,
         source: 'Website Calculator',
         status: 'NEW',
-        priority: 'HIGH'
-      });
-      
-      // Also create a task for the agent
-      await axios.post(`${apiUrl}/tasks`, { 
-        title: `New ${formData.insuranceType} Lead - ${formData.name}`,
-        description: `Coverage Required: ${formData.coverage} \nDetails: ${notes}`,
-        status: 'TODO',
         priority: 'HIGH'
       });
     } catch (error) {
