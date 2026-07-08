@@ -14,8 +14,8 @@ export const paymentRepository = {
     });
   },
 
-  findMany: async (params: { skip: number; take: number; search: string; filters: PaymentFilter }) => {
-    const { skip, take, search, filters } = params;
+  findMany: async (params: { skip: number; take: number; search: string; filters: PaymentFilter; sortBy?: string; sortOrder?: string }) => {
+    const { skip, take, search, filters, sortBy = "createdAt", sortOrder = "desc" } = params;
     
     const where: Prisma.PaymentWhereInput = {
       deletedAt: null,
@@ -40,7 +40,7 @@ export const paymentRepository = {
       skip,
       take,
       include: { policy: true, createdBy: true },
-      orderBy: { createdAt: "desc" }
+      orderBy: { [sortBy]: sortOrder }
     });
   },
 

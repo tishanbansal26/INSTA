@@ -5,12 +5,20 @@ import Razorpay from "razorpay";
 import crypto from "crypto";
 import { AppError } from "../../shared/errors/AppError";
 import { notificationService } from "../../shared/services/NotificationService";
+import { AuditService } from "../../shared/services/AuditService";
 
 export const paymentController = {
   create: async (req: Request, res: Response, next: NextFunction) => {
     try {
       if (!req.user?.id) throw new Error("Unauthorized");
       const payment = await paymentService.create(req.body, req.user.id);
+      await AuditService.log({
+        req,
+        tableName: "Payment",
+        recordId: payment.id,
+        action: "CREATE",
+        newValue: payment
+      });
       res.status(201).json(apiResponse(true, "Payment created successfully", payment, 201));
     } catch (error) {
       next(error);
@@ -40,7 +48,16 @@ export const paymentController = {
     try {
       if (!req.user?.id) throw new Error("Unauthorized");
       const id = Array.isArray((req.params.id as string)) ? (req.params.id as string)[0] : (req.params.id as string);
+      const oldPayment = await paymentService.getById(id);
       const payment = await paymentService.update(id, req.body, req.user.id);
+      await AuditService.log({
+        req,
+        tableName: "Payment",
+        recordId: payment.id,
+        action: "UPDATE",
+        oldValue: oldPayment,
+        newValue: payment
+      });
       res.status(200).json(apiResponse(true, "Payment updated successfully", payment));
     } catch (error) {
       next(error);
@@ -51,7 +68,15 @@ export const paymentController = {
     try {
       if (!req.user?.id) throw new Error("Unauthorized");
       const id = Array.isArray((req.params.id as string)) ? (req.params.id as string)[0] : (req.params.id as string);
+      const oldPayment = await paymentService.getById(id);
       const payment = await paymentService.remove(id, req.user.id);
+      await AuditService.log({
+        req,
+        tableName: "Payment",
+        recordId: id,
+        action: "DELETE",
+        oldValue: oldPayment
+      });
       res.status(200).json(apiResponse(true, "Payment deleted successfully", payment));
     } catch (error) {
       next(error);
@@ -128,10 +153,20 @@ export const paymentController = {
 
       if (generated_signature === razorpay_signature) {
         // Payment is successful
+        const oldPayment = await paymentService.getById(paymentId);
         const updatedPayment = await paymentService.update(paymentId, {
           paymentStatus: "SUCCESS",
           transactionId: razorpay_payment_id
         }, req.user.id);
+
+        await AuditService.log({
+          req,
+          tableName: "Payment",
+          recordId: updatedPayment.id,
+          action: "UPDATE",
+          oldValue: oldPayment,
+          newValue: updatedPayment
+        });
         
         // Trigger notification event
         notificationService.notify('payment.received', {

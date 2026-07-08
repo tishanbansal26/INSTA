@@ -93,9 +93,11 @@ export const policyService = {
     const status = query.status as string | undefined;
     const companyId = query.companyId as string | undefined;
     const clientId = query.clientId as string | undefined;
+    const sortBy = query.sortBy || "createdAt";
+    const sortOrder = query.sortOrder === "asc" ? "asc" : "desc";
 
     const [items, total] = await Promise.all([
-      policyRepository.findMany({ page, limit, search, status, companyId, clientId, skip, take: limit }),
+      policyRepository.findMany({ page, limit, search, status, companyId, clientId, skip, take: limit, sortBy, sortOrder }),
       policyRepository.count({ search, status, companyId, clientId }),
     ]);
 
