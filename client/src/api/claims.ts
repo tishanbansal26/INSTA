@@ -28,21 +28,21 @@ export interface ClaimListResponse {
 export const claimsApi = {
   list: async (params?: { page?: number; limit?: number; search?: string; status?: string }): Promise<ClaimListResponse> => {
     const response = await apiClient.get('/claims', { params });
-    return response.data.data;
+    return response.data;
   },
   
   getById: async (id: string): Promise<Claim> => {
     const response = await apiClient.get(`/claims/${id}`);
-    return response.data.data;
+    return response.data;
   },
 
   create: async (data: Partial<Claim>): Promise<Claim> => {
     const response = await apiClient.post('/claims', data);
-    return response.data.data;
+    return response.data;
   },
 
   update: async (id: string, data: Partial<Claim>): Promise<Claim> => {
     const response = await apiClient.put(`/claims/${id}`, data);
-    return response.data.data;
+    return response.data;
   }
 };

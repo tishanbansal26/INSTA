@@ -11,7 +11,7 @@ export const clientRepository = {
   },
 
   findMany: async (query: any) => {
-    const { page, limit, search, isActive, skip, take } = query;
+    const { page, limit, search, isActive, skip, take, sortBy = "createdAt", sortOrder = "desc" } = query;
     const where: any = { deletedAt: null };
 
     if (typeof isActive === "boolean") {
@@ -33,7 +33,7 @@ export const clientRepository = {
       where,
       skip: skip ?? (page - 1) * limit,
       take: take ?? limit,
-      orderBy: { createdAt: "desc" },
+      orderBy: { [sortBy]: sortOrder },
     });
   },
 

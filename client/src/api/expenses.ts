@@ -22,11 +22,11 @@ export interface ExpenseListResponse {
 export const expensesApi = {
   list: async (params?: { page?: number; limit?: number; search?: string }): Promise<ExpenseListResponse> => {
     const response = await apiClient.get('/expenses', { params });
-    return response.data.data;
+    return response.data;
   },
   
   getById: async (id: string): Promise<Expense> => {
     const response = await apiClient.get(`/expenses/${id}`);
-    return response.data.data;
+    return response.data;
   },
 };

@@ -6,7 +6,7 @@ export const policyRepository = {
   },
 
   findMany: async (query: any) => {
-    const { page, limit, search, status, companyId, clientId, skip, take } = query;
+    const { page, limit, search, status, companyId, clientId, skip, take, sortBy = "createdAt", sortOrder = "desc" } = query;
     const where: any = { deletedAt: null };
 
     if (status) {
@@ -37,7 +37,7 @@ export const policyRepository = {
       include: { client: true, company: true, plan: true, agent: true },
       skip: skip ?? (page - 1) * limit,
       take: take ?? limit,
-      orderBy: { createdAt: "desc" },
+      orderBy: { [sortBy]: sortOrder },
     });
   },
 

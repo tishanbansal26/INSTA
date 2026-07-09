@@ -27,22 +27,22 @@ export interface PolicyListResponse {
 export const policiesApi = {
   list: async (params?: { page?: number; limit?: number; search?: string; status?: string }): Promise<PolicyListResponse> => {
     const response = await apiClient.get('/policies', { params });
-    return response.data.data;
+    return response.data;
   },
   
   getById: async (id: string): Promise<Policy> => {
     const response = await apiClient.get(`/policies/${id}`);
-    return response.data.data;
+    return response.data;
   },
 
   create: async (data: Partial<Policy>): Promise<Policy> => {
     const response = await apiClient.post('/policies', data);
-    return response.data.data;
+    return response.data;
   },
 
   update: async (id: string, data: Partial<Policy>): Promise<Policy> => {
     const response = await apiClient.put(`/policies/${id}`, data);
-    return response.data.data;
+    return response.data;
   },
 
   delete: async (id: string): Promise<void> => {

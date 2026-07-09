@@ -1,11 +1,19 @@
 import type { Request, Response, NextFunction } from "express";
 import { apiResponse } from "../../shared/responses/apiResponse";
 import { policyService } from "./service";
+import { AuditService } from "../../shared/services/AuditService";
 
 export const policyController = {
   create: async (req: Request, res: Response, next: NextFunction) => {
     try {
       const policy = await policyService.create(req.body, req.user?.id);
+      await AuditService.log({
+        req,
+        tableName: "Policy",
+        recordId: policy.id,
+        action: "CREATE",
+        newValue: policy
+      });
       res.status(201).json(apiResponse(true, "Policy created successfully", policy, 201));
     } catch (error) {
       next(error);
@@ -34,7 +42,16 @@ export const policyController = {
   update: async (req: Request, res: Response, next: NextFunction) => {
     try {
       const id = Array.isArray((req.params.id as string)) ? (req.params.id as string)[0] : (req.params.id as string);
+      const oldPolicy = await policyService.getById(id);
       const policy = await policyService.update(id, req.body);
+      await AuditService.log({
+        req,
+        tableName: "Policy",
+        recordId: policy.id,
+        action: "UPDATE",
+        oldValue: oldPolicy,
+        newValue: policy
+      });
       res.status(200).json(apiResponse(true, "Policy updated successfully", policy));
     } catch (error) {
       next(error);
@@ -44,7 +61,15 @@ export const policyController = {
   remove: async (req: Request, res: Response, next: NextFunction) => {
     try {
       const id = Array.isArray((req.params.id as string)) ? (req.params.id as string)[0] : (req.params.id as string);
+      const oldPolicy = await policyService.getById(id);
       const policy = await policyService.remove(id);
+      await AuditService.log({
+        req,
+        tableName: "Policy",
+        recordId: id,
+        action: "DELETE",
+        oldValue: oldPolicy
+      });
       res.status(200).json(apiResponse(true, "Policy deleted successfully", policy));
     } catch (error) {
       next(error);
