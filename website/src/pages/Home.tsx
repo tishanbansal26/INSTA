@@ -48,7 +48,7 @@ export const Home = () => {
               Talk to Advisor
             </a>
             <a 
-              href="https://insta-client.vercel.app/login" 
+              href={`${import.meta.env.VITE_PORTAL_URL || 'http://localhost:5173'}/login`} 
               className="px-6 py-2.5 bg-primary text-white font-bold rounded-lg hover:bg-primary-hover transition-colors shadow-lg shadow-primary/20"
             >
               Customer Portal
