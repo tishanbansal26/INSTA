@@ -24,11 +24,11 @@ export interface CommissionListResponse {
 export const commissionsApi = {
   list: async (params?: { page?: number; limit?: number; search?: string }): Promise<CommissionListResponse> => {
     const response = await apiClient.get('/commissions', { params });
-    return response.data.data;
+    return response.data;
   },
   
   getById: async (id: string): Promise<Commission> => {
     const response = await apiClient.get(`/commissions/${id}`);
-    return response.data.data;
+    return response.data;
   },
 };

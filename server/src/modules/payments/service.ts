@@ -40,6 +40,8 @@ export const paymentService = {
     const limit = Number(query.limit || 20);
     const skip = (page - 1) * limit;
     const search = query.search || "";
+    const sortBy = query.sortBy || "createdAt";
+    const sortOrder = query.sortOrder === "asc" ? "asc" : "desc";
     
     const filters = {
       policyId: query.policyId,
@@ -52,7 +54,7 @@ export const paymentService = {
     };
 
     const [items, total] = await Promise.all([
-      paymentRepository.findMany({ skip, take: limit, search, filters }),
+      paymentRepository.findMany({ skip, take: limit, search, filters, sortBy, sortOrder }),
       paymentRepository.count({ search, filters })
     ]);
 

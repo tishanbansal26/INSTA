@@ -22,11 +22,11 @@ export interface RenewalListResponse {
 export const renewalsApi = {
   list: async (params?: { page?: number; limit?: number; search?: string }): Promise<RenewalListResponse> => {
     const response = await apiClient.get('/renewals', { params });
-    return response.data.data;
+    return response.data;
   },
   
   getById: async (id: string): Promise<Renewal> => {
     const response = await apiClient.get(`/renewals/${id}`);
-    return response.data.data;
+    return response.data;
   },
 };

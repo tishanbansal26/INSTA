@@ -22,9 +22,11 @@ export const clientService = {
     const skip = (page - 1) * limit;
     const search = query.search || "";
     const isActive = query.isActive === undefined ? undefined : query.isActive === "true";
+    const sortBy = query.sortBy || "createdAt";
+    const sortOrder = query.sortOrder === "asc" ? "asc" : "desc";
 
     const [items, total] = await Promise.all([
-      clientRepository.findMany({ page, limit, search, isActive, skip, take: limit }),
+      clientRepository.findMany({ page, limit, search, isActive, skip, take: limit, sortBy, sortOrder }),
       clientRepository.count({ search, isActive }),
     ]);
 

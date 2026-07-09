@@ -22,22 +22,22 @@ export interface ClientListResponse {
 export const clientsApi = {
   list: async (params?: { page?: number; limit?: number; search?: string }): Promise<ClientListResponse> => {
     const response = await apiClient.get('/clients', { params });
-    return response.data.data;
+    return response.data;
   },
   
   getById: async (id: string): Promise<Client> => {
     const response = await apiClient.get(`/clients/${id}`);
-    return response.data.data;
+    return response.data;
   },
 
   create: async (data: Partial<Client>): Promise<Client> => {
     const response = await apiClient.post('/clients', data);
-    return response.data.data;
+    return response.data;
   },
 
   update: async (id: string, data: Partial<Client>): Promise<Client> => {
     const response = await apiClient.put(`/clients/${id}`, data);
-    return response.data.data;
+    return response.data;
   },
 
   delete: async (id: string): Promise<void> => {
